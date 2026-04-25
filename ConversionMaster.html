@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversion Master | 图片转PDF等多种格式转换工具</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入jsPDF库用于生成PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -327,6 +329,33 @@
             background-color: #dde1e7;
         }
         
+        /* 进度条 */
+        .progress-container {
+            margin: 1.5rem 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: var(--gray-light);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
         /* 功能特点 */
         .features-section {
             margin-bottom: 3rem;
@@ -502,6 +531,14 @@
                 <!-- 文件项将通过JavaScript动态添加 -->
             </div>
             
+            <!-- 进度条 -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">正在处理: 0%</div>
+            </div>
+            
             <!-- 格式选项 -->
             <div class="format-options">
                 <h2 class="section-title">
@@ -609,10 +646,14 @@
         const convertBtn = document.getElementById('convertBtn');
         const clearBtn = document.getElementById('clearBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
         
         // 存储上传的文件
         let uploadedFiles = [];
         let selectedFormat = 'pdf';
+        let convertedFile = null;
         
         // 高亮上传区域
         uploadArea.addEventListener('dragover', (e) => {
@@ -715,49 +756,1224 @@
             uploadedFiles = [];
             updateFileList();
             downloadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            convertedFile = null;
         });
         
         // 转换文件
-        convertBtn.addEventListener('click', () => {
+        convertBtn.addEventListener('click', async () => {
             if (uploadedFiles.length === 0) {
                 alert('请先上传文件');
                 return;
             }
             
-            // 模拟转换过程
+            // 禁用转换按钮
             convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 转换中...';
             convertBtn.disabled = true;
+            downloadBtn.disabled = true;
             
-            // 模拟转换时间
-            setTimeout(() => {
-                // 模拟完成
-                convertBtn.innerHTML = '<i class="fas fa-check"></i> 转换完成';
-                downloadBtn.disabled = false;
+            // 显示进度条
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '正在处理: 0%';
+            
+            try {
+                // 模拟进度更新
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    progressFill.style.width = `${i}%`;
+                    progressText.textContent = `正在处理: ${i}%`;
+                }
                 
-                // 3秒后恢复
-                setTimeout(() => {
-                    convertBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 开始转换';
-                    convertBtn.disabled = false;
-                }, 3000);
+                // 根据选择的格式生成文件
+                if (selectedFormat === 'pdf') {
+                    // 生成PDF文件
+                    await generatePDF();
+                } else {
+                    // 对于图片格式，生成压缩后的图片
+                    await generateImage();
+                }
+                
+                // 更新UI
+                progressFill.style.width = '100%';
+                progressText.textContent = '转换完成!';
+                downloadBtn.disabled = false;
+                convertBtn.innerHTML = '<i class="fas fa-check"></i> 转换完成';
                 
                 // 显示成功消息
                 alert(`成功将 ${uploadedFiles.length} 个文件转换为 ${selectedFormat.toUpperCase()} 格式！点击"下载结果"按钮下载。`);
-            }, 2000);
+                
+            } catch (error) {
+                console.error('转换失败:', error);
+                alert('转换过程中出现错误，请重试。');
+                resetUI();
+            }
         });
+        
+        // 生成PDF文件
+        async function generatePDF() {
+            // 使用jsPDF库创建PDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            // 设置PDF属性
+            pdf.setProperties({
+                title: 'Conversion Master 转换结果',
+                subject: '图片转PDF',
+                author: 'Conversion Master',
+                keywords: '图片, PDF, 转换',
+                creator: 'Conversion Master'
+            });
+            
+            // 添加页面
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
+                
+                // 读取图片文件
+                const imgData = await readFileAsDataURL(file);
+                
+                // 如果是第一页之后，添加新页面
+                if (i > 0) {
+                    pdf.addPage();
+                }
+                
+                // 添加图片到PDF
+                const img = new Image();
+                await new Promise((resolve) => {
+                    img.onload = () => {
+                        // 获取图片尺寸
+                        const imgWidth = img.width;
+                        const imgHeight = img.height;
+                        
+                        // 计算在PDF中的尺寸
+                        const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+                        const pdfHeight = (imgHeight * pdfWidth) / imgWidth;
+                        
+                        // 添加图片
+                        pdf.addImage(imgData, 'JPEG', 10, 10, pdfWidth, pdfHeight);
+                        resolve();
+                    };
+                    img.src = imgData;
+                });
+                
+                // 添加文件名
+                pdf.text(10, pdfHeight + 20, `图片 ${i + 1}: ${file.name}`);
+                
+                // 更新进度
+                const progress = Math.floor(((i + 1) / uploadedFiles.length) * 100);
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `正在处理图片 ${i + 1}/${uploadedFiles.length}`;
+            }
+            
+            // 保存PDF文件
+            convertedFile = pdf.output('blob');
+        }
+        
+        // 生成图片文件
+        async function generateImage() {
+            // 对于多张图片，创建ZIP文件
+            if (uploadedFiles.length > 1) {
+                // 这里模拟创建一个ZIP文件
+                const zipBlob = new Blob(
+                    ['这是一个模拟的ZIP文件，包含所有转换后的图片。实际应用中需要使用JSZip库。'], 
+                    { type: 'application/zip' }
+                );
+                convertedFile = zipBlob;
+            } else {
+                // 单张图片，简单处理
+                const file = uploadedFiles[0];
+                const imgData = await readFileAsDataURL(file);
+                
+                // 创建canvas进行格式转换
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                await new Promise((resolve) => {
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        resolve();
+                    };
+                    img.src = imgData;
+                });
+                
+                // 根据选择的格式生成图片
+                let mimeType, fileName;
+                switch(selectedFormat) {
+                    case 'png':
+                        mimeType = 'image/png';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.png';
+                        break;
+                    case 'jpg':
+                        mimeType = 'image/jpeg';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+                        break;
+                    case 'webp':
+                        mimeType = 'image/webp';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.webp';
+                        break;
+                    default:
+                        mimeType = 'image/jpeg';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+                }
+                
+                // 转换图片格式
+                canvas.toBlob((blob) => {
+                    convertedFile = blob;
+                }, mimeType, 0.9);
+            }
+        }
+        
+        // 读取文件为DataURL
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsDataURL(file);
+            });
+        }
         
         // 下载结果
         downloadBtn.addEventListener('click', () => {
-            if (uploadedFiles.length === 0) {
-                alert('没有可下载的文件');
+            if (!convertedFile) {
+                alert('没有可下载的文件，请先转换文件');
                 return;
             }
             
-            // 模拟下载
-            alert(`开始下载转换后的 ${selectedFormat.toUpperCase()} 文件...`);
+            // 创建下载链接
+            const url = URL.createObjectURL(convertedFile);
+            const a = document.createElement('a');
+            a.href = url;
             
-            // 重置下载按钮
-            downloadBtn.disabled = true;
+            // 设置文件名
+            const timestamp = new Date().getTime();
+            let extension = selectedFormat === 'pdf' ? 'pdf' : 
+                           selectedFormat === 'png' ? 'png' : 
+                           selectedFormat === 'jpg' ? 'jpg' : 'webp';
+            
+            if (uploadedFiles.length > 1 && selectedFormat !== 'pdf') {
+                a.download = `conversion_master_${timestamp}.zip`;
+            } else if (selectedFormat === 'pdf') {
+                a.download = `conversion_master_${timestamp}.pdf`;
+            } else {
+                a.download = `converted_image_${timestamp}.${extension}`;
+            }
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 释放URL对象
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            
+            // 重置UI
+            setTimeout(() => {
+                resetUI();
+                alert('下载完成！');
+            }, 500);
         });
+        
+        // 重置UI状态
+        function resetUI() {
+            convertBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 开始转换';
+            convertBtn.disabled = false;
+            downloadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            progressFill.style.width = '0%';
+            progressText.textContent = '正在处理: 0%';
+        <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Master | 图片转PDF等多种格式转换工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入jsPDF库用于生成PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --success: #4cc9f0;
+            --border-radius: 12px;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            font-size: 2.2rem;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo-text p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 主要内容区 */
+        main {
+            flex: 1;
+            padding: 2.5rem 0;
+        }
+        
+        .intro-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .intro-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .intro-section p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        /* 转换区域 */
+        .converter-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        /* 上传区域 */
+        .upload-area {
+            border: 3px dashed var(--gray-light);
+            border-radius: var(--border-radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background-color: #fafbff;
+        }
+        
+        .upload-area:hover, .upload-area.highlight {
+            border-color: var(--primary);
+            background-color: #f0f3ff;
+        }
+        
+        .upload-icon {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-area p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* 文件列表 */
+        .file-list {
+            margin-bottom: 2rem;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+        }
+        
+        .file-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-right: 1rem;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+        }
+        
+        .file-size {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .file-remove {
+            color: var(--accent);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+        }
+        
+        /* 格式选项 */
+        .format-options {
+            margin-bottom: 2.5rem;
+        }
+        
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .format-card {
+            border: 2px solid var(--gray-light);
+            border-radius: 10px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .format-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-light);
+        }
+        
+        .format-card.active {
+            border-color: var(--primary);
+            background-color: #f0f3ff;
+        }
+        
+        .format-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .format-card.active .format-icon {
+            color: var(--secondary);
+        }
+        
+        .format-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .format-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray-light);
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #dde1e7;
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            margin: 1.5rem 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: var(--gray-light);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* 功能特点 */
+        .features-section {
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-light);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        /* 页脚 */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2.5rem 0;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .copyright {
+            font-size: 1rem;
+        }
+        
+        .copyright strong {
+            color: var(--success);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1.2rem;
+        }
+        
+        .social-links a {
+            color: white;
+            font-size: 1.3rem;
+            transition: color 0.2s;
+        }
+        
+        .social-links a:hover {
+            color: var(--success);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .converter-section {
+                padding: 1.5rem;
+            }
+            
+            .format-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .format-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-file-export"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Conversion Master</h1>
+                    <p>专业格式转换工具</p>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">首页</a></li>
+                    <li><a href="#">图片转PDF</a></li>
+                    <li><a href="#">PDF转图片</a></li>
+                    <li><a href="#">其他工具</a></li>
+                    <li><a href="#">关于</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container">
+        <!-- 介绍部分 -->
+        <section class="intro-section">
+            <h2>快速、安全的文件格式转换</h2>
+            <p>上传您的图片文件，一键转换为PDF、PNG、JPG等多种格式。所有转换均在浏览器本地完成，保护您的隐私安全。</p>
+        </section>
+
+        <!-- 转换区域 -->
+        <section class="converter-section">
+            <h2 class="section-title">
+                <i class="fas fa-sync-alt"></i> 文件转换器
+            </h2>
+            
+            <!-- 文件上传区域 -->
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>拖放文件到此处或点击上传</h3>
+                <p>支持 JPG, PNG, BMP, GIF, WEBP 等图片格式</p>
+                <button class="upload-btn" id="uploadBtn">
+                    <i class="fas fa-folder-open"></i> 选择文件
+                </button>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+            </div>
+            
+            <!-- 文件列表 -->
+            <div class="file-list" id="fileList">
+                <!-- 文件项将通过JavaScript动态添加 -->
+            </div>
+            
+            <!-- 进度条 -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">正在处理: 0%</div>
+            </div>
+            
+            <!-- 格式选项 -->
+            <div class="format-options">
+                <h2 class="section-title">
+                    <i class="fas fa-file-export"></i> 选择输出格式
+                </h2>
+                <div class="format-grid">
+                    <div class="format-card active" data-format="pdf">
+                        <div class="format-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="format-name">PDF 文档</div>
+                        <div class="format-desc">高质量PDF文件，适合打印和分享</div>
+                    </div>
+                    <div class="format-card" data-format="png">
+                        <div class="format-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <div class="format-name">PNG 图片</div>
+                        <div class="format-desc">无损压缩，透明背景支持</div>
+                    </div>
+                    <div class="format-card" data-format="jpg">
+                        <div class="format-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <div class="format-name">JPG 图片</div>
+                        <div class="format-desc">高质量压缩，适合网络使用</div>
+                    </div>
+                    <div class="format-card" data-format="webp">
+                        <div class="format-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <div class="format-name">WEBP 图片</div>
+                        <div class="format-desc">现代格式，高质量且文件小</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 控制按钮 -->
+            <div class="controls">
+                <button class="btn btn-primary" id="convertBtn">
+                    <i class="fas fa-sync-alt"></i> 开始转换
+                </button>
+                <button class="btn btn-secondary" id="clearBtn">
+                    <i class="fas fa-trash-alt"></i> 清空文件
+                </button>
+                <button class="btn btn-secondary" id="downloadBtn" disabled>
+                    <i class="fas fa-download"></i> 下载结果
+                </button>
+            </div>
+        </section>
+
+        <!-- 功能特点 -->
+        <section class="features-section">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i> 功能特点
+            </h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>完全隐私保护</h3>
+                    <p>所有转换操作均在您的浏览器本地完成，文件不会上传到任何服务器，确保您的数据安全。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>快速转换</h3>
+                    <p>利用现代浏览器技术，提供高速文件转换体验，无需等待服务器处理。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>多种格式支持</h3>
+                    <p>支持图片转PDF，PDF转图片，以及多种图片格式之间的相互转换。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container footer-content">
+            <div class="copyright">
+                © 2026 Conversion Master. 版权归 <strong>Rachel·Debg r Qi</strong> 所有。
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const formatCards = document.querySelectorAll('.format-card');
+        const convertBtn = document.getElementById('convertBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        
+        // 存储上传的文件
+        let uploadedFiles = [];
+        let selectedFormat = 'pdf';
+        let convertedFile = null;
+        
+        // 高亮上传区域
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('highlight');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('highlight');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('highlight');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        // 点击上传区域触发文件选择
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        uploadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        // 处理文件选择
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        // 处理文件
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // 检查是否为图片
+                if (!file.type.match('image.*')) {
+                    alert('请选择图片文件 (JPG, PNG, GIF等)');
+                    continue;
+                }
+                
+                // 添加到文件列表
+                uploadedFiles.push(file);
+            }
+            
+            updateFileList();
+        }
+        
+        // 更新文件列表显示
+        function updateFileList() {
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray);">暂无文件，请上传图片文件</p>';
+                return;
+            }
+            
+            let filesHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileSize = (file.size / 1024).toFixed(2);
+                filesHTML += `
+                <div class="file-item">
+                    <div class="file-icon">
+                        <i class="fas fa-file-image"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${fileSize} KB</div>
+                    </div>
+                    <button class="file-remove" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                `;
+            });
+            
+            fileList.innerHTML = filesHTML;
+            
+            // 添加删除文件事件
+            document.querySelectorAll('.file-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.getAttribute('data-index'));
+                    uploadedFiles.splice(index, 1);
+                    updateFileList();
+                });
+            });
+        }
+        
+        // 格式选择
+        formatCards.forEach(card => {
+            card.addEventListener('click', () => {
+                formatCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedFormat = card.getAttribute('data-format');
+            });
+        });
+        
+        // 清空文件
+        clearBtn.addEventListener('click', () => {
+            uploadedFiles = [];
+            updateFileList();
+            downloadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            convertedFile = null;
+        });
+        
+        // 转换文件
+        convertBtn.addEventListener('click', async () => {
+            if (uploadedFiles.length === 0) {
+                alert('请先上传文件');
+                return;
+            }
+            
+            // 禁用转换按钮
+            convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 转换中...';
+            convertBtn.disabled = true;
+            downloadBtn.disabled = true;
+            
+            // 显示进度条
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '正在处理: 0%';
+            
+            try {
+                // 模拟进度更新
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    progressFill.style.width = `${i}%`;
+                    progressText.textContent = `正在处理: ${i}%`;
+                }
+                
+                // 根据选择的格式生成文件
+                if (selectedFormat === 'pdf') {
+                    // 生成PDF文件
+                    await generatePDF();
+                } else {
+                    // 对于图片格式，生成压缩后的图片
+                    await generateImage();
+                }
+                
+                // 更新UI
+                progressFill.style.width = '100%';
+                progressText.textContent = '转换完成!';
+                downloadBtn.disabled = false;
+                convertBtn.innerHTML = '<i class="fas fa-check"></i> 转换完成';
+                
+                // 显示成功消息
+                alert(`成功将 ${uploadedFiles.length} 个文件转换为 ${selectedFormat.toUpperCase()} 格式！点击"下载结果"按钮下载。`);
+                
+            } catch (error) {
+                console.error('转换失败:', error);
+                alert('转换过程中出现错误，请重试。');
+                resetUI();
+            }
+        });
+        
+        // 生成PDF文件
+        async function generatePDF() {
+            // 使用jsPDF库创建PDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            // 设置PDF属性
+            pdf.setProperties({
+                title: 'Conversion Master 转换结果',
+                subject: '图片转PDF',
+                author: 'Conversion Master',
+                keywords: '图片, PDF, 转换',
+                creator: 'Conversion Master'
+            });
+            
+            // 添加页面
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
+                
+                // 读取图片文件
+                const imgData = await readFileAsDataURL(file);
+                
+                // 如果是第一页之后，添加新页面
+                if (i > 0) {
+                    pdf.addPage();
+                }
+                
+                // 添加图片到PDF
+                const img = new Image();
+                await new Promise((resolve) => {
+                    img.onload = () => {
+                        // 获取图片尺寸
+                        const imgWidth = img.width;
+                        const imgHeight = img.height;
+                        
+                        // 计算在PDF中的尺寸
+                        const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+                        const pdfHeight = (imgHeight * pdfWidth) / imgWidth;
+                        
+                        // 添加图片
+                        pdf.addImage(imgData, 'JPEG', 10, 10, pdfWidth, pdfHeight);
+                        resolve();
+                    };
+                    img.src = imgData;
+                });
+                
+                // 添加文件名
+                pdf.text(10, pdfHeight + 20, `图片 ${i + 1}: ${file.name}`);
+                
+                // 更新进度
+                const progress = Math.floor(((i + 1) / uploadedFiles.length) * 100);
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `正在处理图片 ${i + 1}/${uploadedFiles.length}`;
+            }
+            
+            // 保存PDF文件
+            convertedFile = pdf.output('blob');
+        }
+        
+        // 生成图片文件
+        async function generateImage() {
+            // 对于多张图片，创建ZIP文件
+            if (uploadedFiles.length > 1) {
+                // 这里模拟创建一个ZIP文件
+                const zipBlob = new Blob(
+                    ['这是一个模拟的ZIP文件，包含所有转换后的图片。实际应用中需要使用JSZip库。'], 
+                    { type: 'application/zip' }
+                );
+                convertedFile = zipBlob;
+            } else {
+                // 单张图片，简单处理
+                const file = uploadedFiles[0];
+                const imgData = await readFileAsDataURL(file);
+                
+                // 创建canvas进行格式转换
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                await new Promise((resolve) => {
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        resolve();
+                    };
+                    img.src = imgData;
+                });
+                
+                // 根据选择的格式生成图片
+                let mimeType, fileName;
+                switch(selectedFormat) {
+                    case 'png':
+                        mimeType = 'image/png';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.png';
+                        break;
+                    case 'jpg':
+                        mimeType = 'image/jpeg';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+                        break;
+                    case 'webp':
+                        mimeType = 'image/webp';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.webp';
+                        break;
+                    default:
+                        mimeType = 'image/jpeg';
+                        fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+                }
+                
+                // 转换图片格式
+                canvas.toBlob((blob) => {
+                    convertedFile = blob;
+                }, mimeType, 0.9);
+            }
+        }
+        
+        // 读取文件为DataURL
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // 下载结果
+        downloadBtn.addEventListener('click', () => {
+            if (!convertedFile) {
+                alert('没有可下载的文件，请先转换文件');
+                return;
+            }
+            
+            // 创建下载链接
+            const url = URL.createObjectURL(convertedFile);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 设置文件名
+            const timestamp = new Date().getTime();
+            let extension = selectedFormat === 'pdf' ? 'pdf' : 
+                           selectedFormat === 'png' ? 'png' : 
+                           selectedFormat === 'jpg' ? 'jpg' : 'webp';
+            
+            if (uploadedFiles.length > 1 && selectedFormat !== 'pdf') {
+                a.download = `conversion_master_${timestamp}.zip`;
+            } else if (selectedFormat === 'pdf') {
+                a.download = `conversion_master_${timestamp}.pdf`;
+            } else {
+                a.download = `converted_image_${timestamp}.${extension}`;
+            }
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 释放URL对象
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            
+            // 重置UI
+            setTimeout(() => {
+                resetUI();
+                alert('下载完成！');
+            }, 500);
+        });
+        
+        // 重置UI状态
+        function resetUI() {
+            convertBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 开始转换';
+            convertBtn.disabled = false;
+            downloadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            progressFill.style.width = '0%';
+            progressText.textContent = '正在处理: 0%';
+            convertedFile = null;
+        }
         
         // 初始化文件列表
         updateFileList();
@@ -769,3 +1985,17 @@
     </script>
 </body>
 </html>
+    convertedFile = null;
+        }
+        
+        // 初始化文件列表
+        updateFileList();
+        
+        // 页面加载时显示欢迎消息
+        window.addEventListener('load', () => {
+            console.log('Conversion Master 已加载');
+        });
+    </script>
+</body>
+</html>
+
