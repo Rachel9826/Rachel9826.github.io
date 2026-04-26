@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rachel网站集 - 常用网站导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            background-image: linear-gradient(to bottom right, #f0f4ff, #f9f9f9);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%2390cdf4' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .intro {
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border-left: 6px solid #7c3aed;
+        }
+        
+        .intro h2 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+        }
+        
+        .intro h2 i {
+            margin-right: 12px;
+        }
+        
+        .intro p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+        
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            background-color: #f1f5f9;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-btn:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .category-btn.active {
+            background-color: #7c3aed;
+            color: white;
+        }
+        
+        .sites-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .site-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .site-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #7c3aed, #3b82f6);
+        }
+        
+        .site-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.15);
+        }
+        
+        .site-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .site-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-right: 18px;
+        }
+        
+        .site-icon.filled {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+        }
+        
+        .site-icon.empty {
+            background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+            color: #6b7280;
+        }
+        
+        .site-info h3 {
+            font-size: 1.4rem;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        
+        .site-category {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .site-category.filled {
+            background-color: #f0f9ff;
+            color: #0369a1;
+        }
+        
+        .site-category.empty {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .site-url {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        
+        .site-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .site-link.filled {
+            background: linear-gradient(to right, #7c3aed, #3b82f6);
+            color: white;
+        }
+        
+        .site-link.filled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(124, 58, 237, 0.3);
+        }
+        
+        .site-link.empty {
+            background: linear-gradient(to right, #e5e7eb, #d1d5db);
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        .site-link i {
+            margin-right: 10px;
+        }
+        
+        .empty-message {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .copyright {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-top: 10px;
+        }
+        
+        .search-container {
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 18px 25px 18px 60px;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.2rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #7c3aed;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+        
+        .how-to-edit {
+            background-color: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+            text-align: left;
+        }
+        
+        .how-to-edit h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .how-to-edit h3 i {
+            margin-right: 10px;
+        }
+        
+        .how-to-edit ol {
+            margin-left: 20px;
+            color: #92400e;
+        }
+        
+        .how-to-edit li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .how-to-edit code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #92400e;
+        }
+        
+        @media (max-width: 768px) {
+            .sites-container {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .site-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .site-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-item {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bookmark"></i> Rachel网站集</h1>
+            <p class="subtitle">常用网站导航 | 待添加内容 | 网站收藏管理器</p>
+        </header>
+        
+        <div class="intro">
+            <h2><i class="fas fa-compass"></i> 网站导航说明</h2>
+            <p>这是一个空白的网站收藏集，目前所有30个位置都处于待添加状态。</p>
+            <p>您需要按照下面的"如何编辑网站"说明，手动添加您想要分享的网站。</p>
+            <p>所有灰色背景的卡片表示该位置待添加内容，添加后会变成彩色并可点击访问。</p>
+        </div>
+        
+        <div class="stats" id="statsContainer">
+            <!-- 统计信息将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="sites-container" id="sitesContainer">
+            <!-- 网站卡片将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="how-to-edit">
+            <h3><i class="fas fa-edit"></i> 如何编辑网站？</h3>
+            <ol>
+                <li>右键点击页面，选择"查看页面源代码"或按Ctrl+U</li>
+                <li>找到 JavaScript 部分中名为 "websiteData" 的数组（大约在第270行）</li>
+                <li>按照以下格式修改网站信息：</li>
+                <li><code>{ id: 1, name: "网站名称", url: "https://网站地址", category: "分类名称" }</code></li>
+                <li>例如：<code>{ id: 1, name: "Google搜索", url: "https://www.google.com", category: "搜索引擎" }</code></li>
+                <li>修改完成后保存HTML文件，刷新页面即可看到更改</li>
+                <li>重复此过程，直到填满所有30个网站位置</li>
+            </ol>
+        </div>
+        
+        <footer>
+            <p>Rachel网站集 &copy; 2023 | 常用网站导航 | 最后更新: <span id="currentDate"></span></p>
+            <p class="copyright">版权归deng-r-qi所有</p>
+        </footer>
+    </div>
+
+    <script>
+        // 网站数据 - 全部清空，等待您手动填写
+        const websiteData = [
+            { id: 1, name: "PDF转换工具", url: "https://rachel9826.github.io/%E5%9B%BE%E7%89%87%E8%BD%ACPDF.html", category: "工具" },
+            { id: 2, name: "MP3 转换工具", url: "https://rachel9826.github.io/conversionMP3.html", category: "工具" },
+            { id: 3, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 4, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 5, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 6, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 7, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 8, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 9, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 10, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 11, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 12, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 13, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 14, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 15, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 16, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 17, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 18, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 19, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 20, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 21, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 22, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 23, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 24, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 25, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 26, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 27, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 28, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 29, name: "暂时没有，等待更新", url: "#", category: "待更新" },
+            { id: 30, name: "暂时没有，等待更新", url: "#", category: "待更新" }
+        ];
+
+        // 获取所有分类
+        function getAllCategories() {
+            const categories = new Set();
+            websiteData.forEach(site => {
+                if (site.category) {
+                    categories.add(site.category);
+                }
+            });
+            return ["全部", ...Array.from(categories).sort()];
+        }
+
+        // 生成统计信息
+        function generateStats() {
+            const totalSites = websiteData.length;
+            const filledSites = websiteData.filter(site => 
+                site.name !== "暂时没有，等待更新" && site.url !== "#"
+            ).length;
+            const emptySites = totalSites - filledSites;
+            const percentage = Math.round((filledSites / totalSites) * 100);
+            
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${totalSites}</div>
+                    <div class="stat-label">总网站数量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${filledSites}</div>
+                    <div class="stat-label">已添加网站</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${emptySites}</div>
+                    <div class="stat-label">待更新网站</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${percentage}%</div>
+                    <div class="stat-label">完成进度</div>
+                </div>
+            `;
+        }
+
+        // 生成网站卡片
+        function generateSiteCards() {
+            const container = document.getElementById('sitesContainer');
+            container.innerHTML = '';
+            
+            websiteData.forEach(site => {
+                const isFilled = site.name !== "暂时没有，等待更新" && site.url !== "#";
+                const card = document.createElement('div');
+                card.className = 'site-card';
+                card.dataset.category = site.category;
+                
+                // 获取网站名称的首字母作为图标
+                const firstLetter = isFilled ? site.name.charAt(0).toUpperCase() : "?";
+                
+                card.innerHTML = `
+                    <div class="site-header">
+                        <div class="site-icon ${isFilled ? 'filled' : 'empty'}">${firstLetter}</div>
+                        <div class="site-info">
+                            <h3>${site.name}</h3>
+                            <span class="site-category ${isFilled ? 'filled' : 'empty'}">${site.category}</span>
+                        </div>
+                    </div>
+                    <p class="site-url">${isFilled ? site.url : '<span class="empty-message">等待添加网址...</span>'}</p>
+                    ${isFilled ? 
+                        `<a href="${site.url}" target="_blank" class="site-link filled">
+                            <i class="fas fa-external-link-alt"></i> 访问网站
+                        </a>` : 
+                        `<div class="site-link empty">
+                            <i class="fas fa-clock"></i> 等待更新
+                        </div>`
+                    }
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 设置当前日期
+            const now = new Date();
+            const formattedDate = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+            document.getElementById('currentDate').textContent = formattedDate;
+            
+            // 生成统计信息
+            generateStats();
+            
+            // 生成网站卡片
+            generateSiteCards();
+        });
+    </script>
+</body>
+</html>
