@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二维码生成工具</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:#f5f7fa;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.container{
+  background:#fff;
+  border-radius:16px;
+  padding:32px;
+  max-width:480px;
+  width:100%;
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+  border:2px dashed #3498db;
+}
+
+h1{
+  text-align:center;
+  color:#2c3e50;
+  margin-bottom:24px;
+  font-size:22px;
+}
+
+/* 输入框 */
+input[type=text]{
+  width:100%;
+  padding:12px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:15px;
+  margin-bottom:12px;
+}
+input:focus{outline:none;border-color:#3498db}
+
+/* 按钮 */
+.btn{
+  width:100%;
+  padding:12px;
+  background:#3498db;
+  color:#fff;
+  border:none;
+  border-radius:25px;
+  font-size:16px;
+  cursor:pointer;
+  transition:.2s;
+}
+.btn:hover{background:#2980b9}
+
+/* 二维码区 */
+#qrcode{
+  text-align:center;
+  margin:20px 0;
+  min-height:220px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#qrcode canvas,#qrcode img{
+  display:block;
+  margin:auto;
+  max-width:100%;
+}
+
+.tip{
+  text-align:center;
+  color:#999;
+  font-size:13px;
+  margin-top:8px;
+}
+.err{
+  color:#e74c3c;
+  text-align:center;
+  font-size:13px;
+  margin-top:8px;
+}
+
+/* 页脚 */
+.footer{
+  margin-top:30px;
+  text-align:center;
+  color:#95a5a6;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>📱 二维码生成工具</h1>
+
+  <input type="text" id="urlInput" placeholder="请输入网址，如 https://www.example.com">
+  <button class="btn" onclick="genQR()">生成二维码</button>
+
+  <div id="qrcode"></div>
+  <div class="tip">输入完整网址（需包含 http:// 或 https://）</div>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="footer">
+  本网站版权归 ©️DRQ 所有
+</div>
+
+<script>
+function genQR(){
+  const url = document.getElementById('urlInput').value.trim();
+  const err = document.getElementById('err');
+  err.textContent = '';
+
+  if (!url) {
+    err.textContent = '请输入网址';
+    return;
+  }
+
+  if (!/^https?:\/\/.+/.test(url)) {
+    err.textContent = '网址需以 http:// 或 https:// 开头';
+    return;
+  }
+
+  const qrBox = document.getElementById('qrcode');
+  qrBox.innerHTML = '';
+
+  new QRCode(qrBox, {
+    text: url,
+    width: 256,
+    height: 256,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+</script>
+</body>
+</html>
