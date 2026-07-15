@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Brian网页小工具收藏集</title>
+    <title>Brian网页小工具收藏集 · 默认折叠</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <style>
@@ -21,6 +20,21 @@
         .text-accent { color: #c9a87c; }
         .hover\:border-accent:hover { border-color: #c9a87c; }
         .shadow-custom { box-shadow: 0 8px 30px -12px rgba(90,50,20,0.25); }
+
+        .card-collapsed {
+            display: none !important;
+        }
+
+        .toggle-btn {
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-btn:hover {
+            background: #e8e4df;
+        }
+        .toggle-btn:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
@@ -49,7 +63,7 @@
         <p class="mt-8 max-w-xl text-base leading-relaxed text-muted-foreground">
             这里是网络上的三十个小角落 —— 有的已经填满，有的还空着，在等一件合适的东西放上去。都是在空闲的时间里，配着咖啡做的。
         </p>
-        <!-- 统计（添加了 id，便于 JS 更新） -->
+        <!-- 统计 -->
         <div class="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4" style="background:#e8e4df;">
             <div class="bg-card p-6"> <div class="font-display text-3xl text-foreground">30</div> <div class="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">总数量</div> </div>
             <div class="bg-card p-6"> <div id="collectedCount" class="font-display text-3xl text-foreground">4</div> <div class="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">已收录</div> </div>
@@ -58,15 +72,23 @@
         </div>
     </section>
 
-    <!-- 收藏区（30格） -->
+    <!-- 收藏区 -->
     <section id="collection" class="mx-auto max-w-5xl px-6 pb-24">
-        <div class="mb-10 flex items-baseline justify-between">
+        <div class="mb-10 flex flex-wrap items-baseline justify-between gap-4">
             <h2 class="font-display text-2xl text-foreground">收藏一览</h2>
-            <span id="countDisplay" class="text-xs uppercase tracking-widest text-muted-foreground">4 / 30</span>
+            <div class="flex items-center gap-4">
+                <span id="countDisplay" class="text-xs uppercase tracking-widest text-muted-foreground">4 / 30</span>
+                <button id="collapseToggleBtn" class="toggle-btn rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground shadow-sm transition-all hover:shadow-md flex items-center gap-1.5">
+                    <span id="collapseIcon">⬇️</span>
+                    <span id="collapseLabel">折叠空位</span>
+                </button>
+            </div>
         </div>
+
         <div id="cardGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-            <!-- 1. 图片转 PDF（已录入） -->
+            <!-- ===== 已录入卡片（5个） ===== -->
+            <!-- 1. 图片转 PDF -->
             <a href="https://rachel9826.github.io/%E5%9B%BE%E7%89%87%E8%BD%ACPDF.html" target="_blank" rel="noopener noreferrer"
                class="group relative flex flex-col justify-between rounded-lg border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-custom">
                 <div>
@@ -134,17 +156,16 @@
                 </div>
             </a>
 
-            <!-- ========== 以下是 26 个空位，标题和链接均为“敬请期待～” ========== -->
-            <!-- 第 5 格 -->
+            <!-- 5. 布莱恩网站集～ (已录入) -->
             <a href="敬请期待～" target="_blank" rel="noopener noreferrer"
                class="group relative flex flex-col justify-between rounded-lg border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-custom">
                 <div>
                     <div class="flex items-center justify-between">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary font-display text-lg text-muted-foreground">·</div>
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary font-display text-lg text-primary">.</div>
                         <span class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">空位</span>
                     </div>
                     <h3 class="mt-6 font-display text-xl text-foreground group-hover:text-accent transition-colors">敬请期待～</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-muted-foreground">第 5 格 / 共 30 格</p>
+                    <p class="mt-2 text-sm leading-relaxed text-muted-foreground">第 5 格/共 30 格</p>
                 </div>
                 <div class="mt-8 flex items-center gap-2 text-sm text-primary">
                     <span class="border-b border-transparent transition-colors group-hover:border-primary">访问</span>
@@ -152,6 +173,7 @@
                 </div>
             </a>
 
+            <!-- ===== 以下为 25 个空位卡片（第6~30格） ===== -->
             <!-- 第 6 格 -->
             <a href="敬请期待～" target="_blank" rel="noopener noreferrer"
                class="group relative flex flex-col justify-between rounded-lg border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-custom">
@@ -594,34 +616,79 @@
     <!-- 页脚 -->
     <footer class="mx-auto flex max-w-5xl items-center justify-between px-6 py-10 text-xs text-muted-foreground">
         <span>© 2026 DRQ（Brian）</span>
-        <span class="italic">1.0.0</span>
+        <span class="italic">1.0.0 · 默认折叠</span>
     </footer>
 </div>
 
-<!-- ========== 自动统计脚本 ========== -->
+<!-- ========== 脚本：统计 + 折叠功能（基于标题文字） ========== -->
 <script>
-    (function updateStats() {
-        // 获取所有卡片（<a> 标签）
-        var cards = document.querySelectorAll('#cardGrid a');
-        var total = 30;
-        var collected = 0;
+    (function() {
+        // 1. 统计更新（基于标题是否包含“敬请期待”）
+        function updateStats() {
+            const cards = document.querySelectorAll('#cardGrid a');
+            let collected = 0;
+            cards.forEach(card => {
+                const titleEl = card.querySelector('h3');
+                if (titleEl && !titleEl.textContent.includes('敬请期待')) {
+                    collected++;
+                }
+            });
+            const total = 30;
+            const pending = total - collected;
+            const progress = Math.round((collected / total) * 100);
+            document.getElementById('collectedCount').textContent = collected;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('progressCount').textContent = progress + '%';
+            document.getElementById('countDisplay').textContent = collected + ' / ' + total;
+            return pending;
+        }
 
-        // 遍历统计：href 不等于 "敬请期待～" 的算作已收录
-        cards.forEach(function(card) {
-            var href = card.getAttribute('href');
-            if (href && href !== '敬请期待～' && href.trim() !== '') {
-                collected++;
+        // 2. 折叠 / 展开逻辑
+        let collapsed = false;
+        const toggleBtn = document.getElementById('collapseToggleBtn');
+        const collapseIcon = document.getElementById('collapseIcon');
+        const collapseLabel = document.getElementById('collapseLabel');
+
+        function getEmptyCards() {
+            const allCards = document.querySelectorAll('#cardGrid a');
+            const emptyCards = [];
+            allCards.forEach(card => {
+                const titleEl = card.querySelector('h3');
+                if (titleEl && titleEl.textContent.includes('敬请期待')) {
+                    emptyCards.push(card);
+                }
+            });
+            return emptyCards;
+        }
+
+        function toggleEmptyCards() {
+            const emptyCards = getEmptyCards();
+            const count = emptyCards.length;
+
+            if (!collapsed) {
+                // 折叠
+                emptyCards.forEach(card => card.classList.add('card-collapsed'));
+                collapseIcon.textContent = '⬆️';
+                collapseLabel.textContent = `展开空位 (${count})`;
+                collapsed = true;
+            } else {
+                // 展开
+                emptyCards.forEach(card => card.classList.remove('card-collapsed'));
+                collapseIcon.textContent = '⬇️';
+                collapseLabel.textContent = `折叠空位 (${count})`;
+                collapsed = false;
             }
-        });
+        }
 
-        var pending = total - collected;
-        var progress = Math.round((collected / total) * 100);
+        // 初始化统计
+        const pending = updateStats();
+        collapseLabel.textContent = `折叠空位 (${pending})`;
 
-        // 更新界面
-        document.getElementById('collectedCount').textContent = collected;
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('progressCount').textContent = progress + '%';
-        document.getElementById('countDisplay').textContent = collected + ' / ' + total;
+        // 绑定点击事件
+        toggleBtn.addEventListener('click', toggleEmptyCards);
+
+        // 默认折叠（页面加载后自动执行一次）
+        toggleEmptyCards();
     })();
 </script>
 
