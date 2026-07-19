@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>手机马达测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #d9c8b2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            touch-action: manipulation;
+        }
+
+        .card {
+            background: rgba(235, 220, 204, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 32px 24px 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px -12px rgba(90, 60, 40, 0.25),
+                        inset 0 1px 1px rgba(255, 240, 225, 0.3);
+            border: 1px solid rgba(200, 170, 145, 0.25);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #4d3321;
+            text-shadow: 0 1px 3px rgba(255, 235, 215, 0.3);
+            margin-bottom: 4px;
+        }
+
+        .app-sub {
+            color: #7a5f48;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            background: rgba(180, 145, 115, 0.12);
+            padding: 6px 18px;
+            border-radius: 40px;
+            display: inline-block;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(180, 145, 115, 0.12);
+            margin-bottom: 22px;
+        }
+
+        .mode-badge {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .badge-item {
+            background: rgba(180, 145, 115, 0.08);
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #7a5f48;
+            border: 1px solid rgba(180, 145, 115, 0.08);
+            backdrop-filter: blur(4px);
+            letter-spacing: 0.2px;
+        }
+
+        .badge-item.active {
+            background: rgba(130, 90, 60, 0.15);
+            color: #4d3321;
+            border-color: rgba(130, 90, 60, 0.2);
+        }
+
+        .vibrate-area {
+            background: rgba(210, 185, 165, 0.3);
+            border-radius: 44px;
+            padding: 24px 12px 16px;
+            border: 1px solid rgba(180, 145, 115, 0.1);
+            box-shadow: inset 0 8px 20px rgba(90, 60, 40, 0.08);
+            margin-bottom: 16px;
+        }
+
+        .vibration-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 210px;
+            margin: 0 auto;
+            border: none;
+            border-radius: 80px;
+            background: radial-gradient(circle at 30% 30%, #b89578, #8a6e56);
+            box-shadow: 0 12px 28px rgba(90, 60, 40, 0.2),
+                        0 0 0 1px rgba(255, 235, 215, 0.2) inset,
+                        0 0 0 2px rgba(90, 60, 40, 0.06) inset;
+            color: #f5ede4;
+            font-size: 1.1rem;
+            font-weight: 450;
+            letter-spacing: 1px;
+            cursor: default;
+            transition: all 0.08s linear;
+            touch-action: none;
+            padding: 16px;
+            position: relative;
+        }
+
+        .vibration-btn:active,
+        .vibration-btn.active {
+            transform: scale(0.96);
+            background: radial-gradient(circle at 30% 30%, #c4a084, #7d624b);
+            box-shadow: 0 4px 12px rgba(90, 60, 40, 0.3),
+                        0 0 0 1px rgba(255, 220, 190, 0.2) inset;
+        }
+
+        .vibration-btn .icon {
+            font-size: 2.8rem;
+            line-height: 1;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 4px 8px rgba(60, 40, 25, 0.15));
+        }
+
+        .vibration-btn .label {
+            background: rgba(60, 40, 25, 0.15);
+            padding: 5px 16px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 235, 215, 0.1);
+            transition: all 0.2s;
+            color: #f5ede4;
+        }
+
+        .status-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(180, 145, 115, 0.1);
+            border-radius: 60px;
+            padding: 8px 16px 8px 20px;
+            border: 1px solid rgba(180, 145, 115, 0.08);
+            margin-top: 14px;
+        }
+
+        .status-led {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #6f5540;
+        }
+
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 20px;
+            background: #b8a08e;
+            box-shadow: inset 0 2px 4px rgba(60, 40, 25, 0.08);
+            transition: all 0.15s ease;
+        }
+
+        .led.active-crisp {
+            background: #c49a6c;
+            box-shadow: 0 0 16px #c49a6caa, inset 0 0 6px #eaceb0;
+        }
+
+        .vibrate-count {
+            color: #6f5540;
+            font-variant-numeric: tabular-nums;
+            background: rgba(180, 145, 115, 0.08);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(180, 145, 115, 0.06);
+        }
+
+        /* ---- 新增：长按提示 ---- */
+        .longpress-tip {
+            color: #8a705a;
+            font-size: 0.7rem;
+            margin-top: 14px;
+            padding: 6px 12px;
+            background: rgba(180, 145, 115, 0.08);
+            border-radius: 30px;
+            display: inline-block;
+            border: 1px solid rgba(180, 145, 115, 0.06);
+            letter-spacing: 0.2px;
+            line-height: 1.5;
+        }
+
+        .longpress-tip span {
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .info-note {
+            color: #7a5f48;
+            font-size: 0.7rem;
+            margin-top: 16px;
+            padding: 10px 8px;
+            border-top: 1px solid rgba(180, 145, 115, 0.08);
+            letter-spacing: 0.2px;
+            background: rgba(180, 145, 115, 0.05);
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 16px;
+        }
+
+        .info-note span {
+            display: inline-block;
+            background: rgba(180, 145, 115, 0.06);
+            padding: 0 12px;
+            border-radius: 30px;
+            color: #6f5540;
+        }
+
+        /* ---- 底部版权 ---- */
+        .footer-copyright {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(180, 145, 115, 0.1);
+            color: #8a705a;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 24px 16px 24px;
+                border-radius: 36px;
+            }
+            .app-title {
+                font-size: 1.5rem;
+            }
+            .vibration-btn {
+                max-width: 180px;
+            }
+            .vibration-btn .icon {
+                font-size: 2.4rem;
+            }
+            .badge-item {
+                font-size: 0.7rem;
+                padding: 4px 14px;
+            }
+            .longpress-tip {
+                font-size: 0.65rem;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="app-title">📱 手机马达测试</div>
+        <div class="app-sub">长按 · 清脆双震 (0.1s间隔)</div>
+
+        <div class="mode-badge">
+            <span class="badge-item">🔁 持续</span>
+            <span class="badge-item active">✨ 清脆双震</span>
+        </div>
+
+        <div class="vibrate-area">
+            <button id="vibrateBtn" class="vibration-btn" touch-action="none">
+                <span class="icon">✨</span>
+                <span class="label" id="btnLabel">按住双震</span>
+            </button>
+
+            <!-- 长按提示：位于按钮下方，状态条上方 -->
+            <div class="longpress-tip">
+                💡 长按按钮 · 若首次无反应，请再长按一次
+            </div>
+
+            <div class="status-panel">
+                <div class="status-led">
+                    <span class="led" id="statusLed"></span>
+                    <span id="statusText">待机</span>
+                </div>
+                <div class="vibrate-count" id="vibrateCount">⚡ 0</div>
+            </div>
+        </div>
+
+        <div class="info-note">
+            <span>✨ 清脆双震模式</span>
+            <span>⏱ 间隔 0.1s · 双次震动</span>
+        </div>
+
+        <!-- 底部版权 -->
+        <div class="footer-copyright">© Brian</div>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            const vibrateBtn = document.getElementById('vibrateBtn');
+            const btnLabel = document.getElementById('btnLabel');
+            const statusLed = document.getElementById('statusLed');
+            const statusText = document.getElementById('statusText');
+            const vibrateCountEl = document.getElementById('vibrateCount');
+
+            let isVibrating = false;
+            let vibrateCounter = 0;
+            let longPressTimer = null;
+            let crispTimer = null;
+            let crispStep = 0;
+
+            // 清脆参数 — 间隔 0.1s = 100ms
+            const CRISP_SHORT_VIB = 40;
+            const CRISP_INTERVAL = 100;
+
+            function stopAllVibration() {
+                try {
+                    if (navigator.vibrate) navigator.vibrate(0);
+                } catch (_) {}
+                if (crispTimer) {
+                    clearTimeout(crispTimer);
+                    crispTimer = null;
+                }
+                crispStep = 0;
+            }
+
+            function startCrisp() {
+                if (!navigator.vibrate) {
+                    isVibrating = true;
+                    updateUI(true);
+                    crispTimer = setInterval(() => {
+                        if (!isVibrating) {
+                            clearInterval(crispTimer);
+                            crispTimer = null;
+                        }
+                    }, 300);
+                    return;
+                }
+
+                crispStep = 0;
+                isVibrating = true;
+                updateUI(true);
+
+                function doCrispStep() {
+                    if (!isVibrating) {
+                        crispTimer = null;
+                        return;
+                    }
+
+                    if (crispStep === 0) {
+                        try { navigator.vibrate(CRISP_SHORT_VIB); } catch (_) {}
+                        crispStep = 1;
+                        crispTimer = setTimeout(doCrispStep, CRISP_INTERVAL);
+                    } else if (crispStep === 1) {
+                        try { navigator.vibrate(CRISP_SHORT_VIB); } catch (_) {}
+                        crispStep = 2;
+                        crispTimer = setTimeout(() => {
+                            if (isVibrating) {
+                                crispStep = 0;
+                                crispTimer = setTimeout(doCrispStep, 30);
+                            } else {
+                                crispTimer = null;
+                            }
+                        }, 40);
+                    }
+                }
+
+                crispTimer = setTimeout(doCrispStep, 20);
+            }
+
+            function startVibration() {
+                if (isVibrating) return;
+                vibrateCounter = 0;
+                vibrateCountEl.textContent = `⚡ 0`;
+                startCrisp();
+
+                if (window._vibrateCounterInterval) {
+                    clearInterval(window._vibrateCounterInterval);
+                }
+                window._vibrateCounterInterval = setInterval(() => {
+                    if (isVibrating) {
+                        vibrateCounter++;
+                        vibrateCountEl.textContent = `⚡ ${vibrateCounter}`;
+                    } else {
+                        clearInterval(window._vibrateCounterInterval);
+                        window._vibrateCounterInterval = null;
+                    }
+                }, 150);
+            }
+
+            function stopVibration() {
+                if (!isVibrating) return;
+                stopAllVibration();
+                isVibrating = false;
+                updateUI(false);
+                if (window._vibrateCounterInterval) {
+                    clearInterval(window._vibrateCounterInterval);
+                    window._vibrateCounterInterval = null;
+                }
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+
+            function updateUI(active) {
+                if (active) {
+                    statusLed.className = 'led active-crisp';
+                    statusText.textContent = '双震中';
+                    btnLabel.textContent = '✨ 震动中';
+                    vibrateBtn.classList.add('active');
+                } else {
+                    statusLed.className = 'led';
+                    statusText.textContent = '待机';
+                    btnLabel.textContent = '按住双震';
+                    vibrateBtn.classList.remove('active');
+                }
+            }
+
+            function handlePointerDown(e) {
+                e.preventDefault();
+                if (isVibrating) stopVibration();
+                longPressTimer = setTimeout(() => {
+                    if (!isVibrating) startVibration();
+                    longPressTimer = null;
+                }, 300);
+            }
+
+            function handlePointerUpOrCancel(e) {
+                e.preventDefault();
+                if (isVibrating) stopVibration();
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                vibrateBtn.classList.remove('active');
+                if (!isVibrating) updateUI(false);
+            }
+
+            vibrateBtn.addEventListener('mousedown', handlePointerDown);
+            window.addEventListener('mouseup', handlePointerUpOrCancel);
+            window.addEventListener('mouseleave', () => {
+                if (isVibrating) stopVibration();
+                if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+                updateUI(false);
+            });
+
+            vibrateBtn.addEventListener('touchstart', handlePointerDown, { passive: false });
+            window.addEventListener('touchend', handlePointerUpOrCancel, { passive: false });
+            window.addEventListener('touchcancel', handlePointerUpOrCancel, { passive: false });
+
+            vibrateBtn.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                if (!touch) return;
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target !== vibrateBtn && !vibrateBtn.contains(target)) {
+                    if (isVibrating) stopVibration();
+                    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+                }
+            }, { passive: true });
+
+            vibrateBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            window.addEventListener('beforeunload', function() {
+                stopAllVibration();
+                if (window._vibrateCounterInterval) clearInterval(window._vibrateCounterInterval);
+                if (longPressTimer) clearTimeout(longPressTimer);
+                try { navigator.vibrate(0); } catch (_) {}
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && isVibrating) stopVibration();
+            });
+
+            updateUI(false);
+            vibrateCountEl.textContent = `⚡ 0`;
+            console.log('✅ 手机马达测试 · 默认清脆双震 (0.1s间隔)');
+        })();
+    </script>
+</body>
+</html>
