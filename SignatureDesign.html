@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>☕️全能签名生成器 · 多风格多字体</title>
+    <!-- Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- 引入多种风格字体 + 书法字体替代方案 -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Pacifico&family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Parisienne&family=Satisfy&family=Kaushan+Script&family=Yellowtail&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@600&family=Alex+Brush&family=Allura&family=UnifrakturMaguntia&family=IM+Fell+English+SC&family=Rochester&family=Tangerine:wght@400;700&family=Italianno&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(145deg, #1e1e2f 0%, #2a2a40 100%);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f0f0f0;
+            --accent: #ffb347;
+            --accent2: #ff7e5f;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 50px;
+            padding: 30px 25px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+            position: relative;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd369, #ff9a9e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 200, 100, 0.4);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 30px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            letter-spacing: 1px;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            flex: 1 1 340px;
+            min-width: 300px;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 35px;
+            padding: 25px 20px;
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+            flex-wrap: wrap;
+        }
+
+        .control-group label i {
+            color: var(--accent);
+            width: 20px;
+            text-align: center;
+        }
+
+        input[type="text"], select, input[type="color"] {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            padding: 14px 18px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.25s ease;
+            width: 100%;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 179, 71, 0.4);
+        }
+
+        select option {
+            background: #2a2a3a;
+            color: white;
+        }
+
+        input[type="color"] {
+            padding: 5px;
+            height: 55px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* 风格选项按钮组 */
+        .style-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .style-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #ddd;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .style-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .style-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #1a1a1a;
+            box-shadow: 0 0 18px rgba(255, 179, 71, 0.6);
+        }
+
+        /* 快速颜色按钮 */
+        .quick-color-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-color-btn {
+            padding: 8px 16px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .quick-color-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .quick-color-btn.black {
+            border-color: #666;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .quick-color-btn.white {
+            border-color: #fff;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .quick-color-btn.green {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.2);
+        }
+
+        /* 滑块 */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.2);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(255, 179, 71, 0.8);
+        }
+
+        /* 预览区域 */
+        .preview-area {
+            flex: 1.5 1 500px;
+            min-width: 350px;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .signature-canvas-wrapper {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 35px;
+            padding: 25px;
+            border: 1px solid var(--card-border);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .canvas-bg-texture {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 30%),
+                              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.04) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        #signatureCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5));
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .canvas-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            letter-spacing: 0.5px;
+            font-size: 0.95rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .action-btn.download {
+            background: var(--accent2);
+            border-color: var(--accent2);
+            color: white;
+        }
+
+        .action-btn.download:hover {
+            background: #ff6f4f;
+            box-shadow: 0 0 25px rgba(255, 126, 95, 0.7);
+        }
+
+        .action-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* 附加元素 */
+        .badge-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .badge-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .badge-check input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        /* 版权信息 */
+        .copyright-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .app-container {
+                padding: 25px 20px 15px;
+                border-radius: 35px;
+            }
+            
+            .control-panel {
+                flex: 1 1 320px;
+                max-width: 100%;
+            }
+            
+            .preview-area {
+                flex: 1 1 400px;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app-container {
+                padding: 20px 15px 10px;
+                border-radius: 25px;
+            }
+            
+            .main-layout {
+                gap: 20px;
+            }
+            
+            .control-panel {
+                padding: 20px 15px;
+                gap: 18px;
+                border-radius: 25px;
+            }
+            
+            .preview-area {
+                gap: 15px;
+            }
+            
+            .signature-canvas-wrapper {
+                padding: 15px;
+                min-height: 250px;
+                border-radius: 25px;
+            }
+            
+            .canvas-actions {
+                gap: 10px;
+            }
+            
+            .action-btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                gap: 8px;
+            }
+            
+            .style-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            input[type="text"], select, input[type="color"] {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-panel {
+                width: 100%;
+                min-width: unset;
+                max-width: 100%;
+            }
+            
+            .preview-area {
+                width: 100%;
+                min-width: unset;
+                max-width: 100%;
+            }
+            
+            .signature-canvas-wrapper {
+                min-height: 200px;
+            }
+            
+            .canvas-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .style-buttons {
+                justify-content: center;
+            }
+            
+            .quick-color-buttons {
+                justify-content: center;
+            }
+        }
+
+        /* ===== 弹窗样式（新增） ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #2a2a3a;
+            padding: 35px 30px;
+            border-radius: 25px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            color: #f0f0f0;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffd369, #ff9a9e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .modal-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1rem;
+            color: #ddd;
+        }
+
+        .modal-content .github-link {
+            display: inline-block;
+            margin: 10px 0 20px;
+            color: #ffb347;
+            font-size: 1.1rem;
+            text-decoration: none;
+            border: 2px solid #ffb347;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .modal-content .github-link:hover {
+            background: #ffb347;
+            color: #1a1a1a;
+            box-shadow: 0 0 20px rgba(255,179,71,0.6);
+        }
+
+        .modal-content .confirm-btn {
+            background: #ffb347;
+            color: #1a1a1a;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-content .confirm-btn:hover {
+            background: #ffa726;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255,179,71,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 弹窗模态框（新增） -->
+    <div id="introModal" class="modal-overlay" style="display: flex;">
+        <div class="modal-content">
+            <h2>👋 欢迎使用签名生成器</h2>
+            <p>这是一个功能强大的签名设计工具，支持多种书法字体、风格和颜色调节。</p>
+            <p>如果你喜欢这个项目，请给我的GitHub仓库点个Star⭐，感谢支持！</p>
+            <a href="https://github.com/Rachel9826/Rachel9826.github.io" target="_blank" class="github-link">
+                <i class="fab fa-github"></i> 访问GitHub仓库
+            </a>
+            <br>
+            <button id="confirmBtn" class="confirm-btn">进入签名设计</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <h1><i class="fas fa-pen-fancy" style="margin-right: 12px;"></i>签名生成器</h1>
+        <div class="subtitle">👉 自由定制 · 多种书法风格 · 实时预览</div>
+
+        <div class="main-layout">
+            <!-- 左侧控制面板 -->
+            <div class="control-panel">
+                <!-- 姓名输入 -->
+                <div class="control-group">
+                    <label><i class="fas fa-user-edit"></i> 你的名字 / 内容</label>
+                    <input type="text" id="signText" value="" placeholder="输入签名内容" maxlength="30">
+                </div>
+
+                <!-- 字体选择 - 包含六种书法体 -->
+                <div class="control-group">
+                    <label><i class="fas fa-font"></i> 书法字体风格</label>
+                    <select id="fontSelect">
+                        <optgroup label="🖋️ 专业书法字体">
+                            <option value="'Alex Brush', cursive">✨ Modern Calligraphy (现代书法)</option>
+                            <option value="'Allura', cursive">📜 Spencerian (斯宾塞体)</option>
+                            <option value="'UnifrakturMaguntia', cursive">🏛️ Uncial (安色尔体)</option>
+                            <option value="'IM Fell English SC', serif">🏰 Blackletter / Gothic (哥特体)</option>
+                            <option value="'Rochester', cursive">✒️ Copperplate (铜版印刷体)</option>
+                            <option value="'Italianno', cursive">📝 Italic (意大利斜体)</option>
+                        </optgroup>
+                        <optgroup label="🎨 其他风格字体">
+                            <option value="'Great Vibes', cursive">💃 Great Vibes (优雅手写)</option>
+                            <option value="'Pacifico', cursive">🌊 Pacifico (海浪体)</option>
+                            <option value="'Caveat', cursive">✏️ Caveat (轻快手写)</option>
+                            <option value="'Dancing Script', cursive">💃 Dancing Script (舞蹈体)</option>
+                            <option value="'Parisienne', cursive">🌸 Parisienne (巴黎体)</option>
+                            <option value="'Satisfy', cursive">🖋️ Satisfy (古典签名)</option>
+                            <option value="'Kaushan Script', cursive" selected>🎨 Kaushan Script (活力)</option>
+                            <option value="'Yellowtail', cursive">🌴 Yellowtail (复古广告)</option>
+                            <option value="'Ma Shan Zheng', cursive">🀄 Ma Shan Zheng (马山正)</option>
+                            <option value="'ZCOOL XiaoWei', serif">📜 ZCOOL 小薇 (古典宋)</option>
+                            <option value="'Noto Serif SC', serif">🔤 Noto Serif SC (衬线)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- 风格预设 -->
+                <div class="control-group">
+                    <label><i class="fas fa-magic"></i> 风格预设</label>
+                    <div class="style-buttons">
+                        <button class="style-btn active" data-style="classic"><i class="fas fa-feather-alt"></i> 经典</button>
+                        <button class="style-btn" data-style="modern"><i class="fas fa-bolt"></i> 现代</button>
+                        <button class="style-btn" data-style="elegant"><i class="fas fa-crown"></i> 优雅</button>
+                        <button class="style-btn" data-style="vintage"><i class="fas fa-hippo"></i> 复古</button>
+                        <button class="style-btn" data-style="shadow"><i class="fas fa-layer-group"></i> 立体阴影</button>
+                        <button class="style-btn" data-style="neon"><i class="fas fa-lightbulb"></i> 霓虹</button>
+                    </div>
+                </div>
+
+                <!-- 颜色选择 -->
+                <div class="control-group">
+                    <label><i class="fas fa-palette"></i> 签名颜色</label>
+                    <input type="color" id="colorPicker" value="#ffb347">
+                    <div class="quick-color-buttons">
+                        <button class="quick-color-btn black" id="blackColorBtn"><i class="fas fa-circle"></i> 黑色字体</button>
+                        <button class="quick-color-btn white" id="whiteColorBtn"><i class="fas fa-circle-notch"></i> 白色字体</button>
+                    </div>
+                </div>
+
+                <!-- 背景颜色切换 -->
+                <div class="control-group">
+                    <label><i class="fas fa-image"></i> 画布背景</label>
+                    <div class="quick-color-buttons">
+                        <button class="quick-color-btn black" id="blackBgBtn"><i class="fas fa-square"></i> 黑色背景</button>
+                        <button class="quick-color-btn white" id="whiteBgBtn"><i class="fas fa-square-full"></i> 白色背景</button>
+                        <button class="quick-color-btn green" id="greenBgBtn"><i class="fas fa-square"></i> 绿幕背景</button>
+                    </div>
+                </div>
+
+                <!-- 字体大小滑块 -->
+                <div class="control-group">
+                    <label><i class="fas fa-text-height"></i> 字体大小: <span id="fontSizeValue">70</span>px</label>
+                    <input type="range" id="fontSizeRange" min="30" max="160" value="70" step="1">
+                </div>
+
+                <!-- 旋转角度 -->
+                <div class="control-group">
+                    <label><i class="fas fa-rotate"></i> 旋转角度: <span id="rotateValue">0</span>°</label>
+                    <input type="range" id="rotateRange" min="-15" max="15" value="0" step="1">
+                </div>
+
+                <!-- 水平位置调整 -->
+                <div class="control-group">
+                    <label><i class="fas fa-arrows-alt-h"></i> 水平位置: <span id="offsetValue">0</span>px</label>
+                    <input type="range" id="offsetRange" min="-200" max="200" value="0" step="1">
+                </div>
+
+                <!-- 高级选项 -->
+                <div class="control-group">
+                    <label><i class="fas fa-sliders-h"></i> 附加效果</label>
+                    <div class="badge-options">
+                        <label class="badge-check">
+                            <input type="checkbox" id="italicCheck"> <i class="fas fa-italic"></i> 斜体
+                        </label>
+                        <label class="badge-check">
+                            <input type="checkbox" id="boldCheck" checked> <i class="fas fa-bold"></i> 粗体
+                        </label>
+                        <label class="badge-check">
+                            <input type="checkbox" id="underlineCheck"> <i class="fas fa-underline"></i> 下划线
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧预览区域 -->
+            <div class="preview-area">
+                <div class="signature-canvas-wrapper">
+                    <div class="canvas-bg-texture"></div>
+                    <canvas id="signatureCanvas" width="600" height="300"></canvas>
+                </div>
+                <div class="canvas-actions">
+                    <button class="action-btn" id="downloadBtn"><i class="fas fa-download"></i> 下载PNG</button>
+                    <button class="action-btn" id="copyBtn"><i class="fas fa-copy"></i> 复制画布</button>
+                    <button class="action-btn" id="randomBtn"><i class="fas fa-dice"></i> 随机风格</button>
+                </div>
+                <p style="text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 5px;">
+                    <i class="fas fa-info-circle"></i> 点击「随机风格」可体验更多创意组合
+                </p>
+            </div>
+        </div>
+        
+        <!-- 版权信息 -->
+        <div class="copyright-footer">
+            <span>©️Brian</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // DOM 元素
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            const signTextInput = document.getElementById('signText');
+            const fontSelect = document.getElementById('fontSelect');
+            const colorPicker = document.getElementById('colorPicker');
+            const fontSizeRange = document.getElementById('fontSizeRange');
+            const fontSizeValue = document.getElementById('fontSizeValue');
+            const rotateRange = document.getElementById('rotateRange');
+            const rotateValue = document.getElementById('rotateValue');
+            const offsetRange = document.getElementById('offsetRange');
+            const offsetValue = document.getElementById('offsetValue');
+            const italicCheck = document.getElementById('italicCheck');
+            const boldCheck = document.getElementById('boldCheck');
+            const underlineCheck = document.getElementById('underlineCheck');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const randomBtn = document.getElementById('randomBtn');
+            const styleButtons = document.querySelectorAll('.style-btn');
+            const blackColorBtn = document.getElementById('blackColorBtn');
+            const whiteColorBtn = document.getElementById('whiteColorBtn');
+            const blackBgBtn = document.getElementById('blackBgBtn');
+            const whiteBgBtn = document.getElementById('whiteBgBtn');
+            const greenBgBtn = document.getElementById('greenBgBtn');
+            const modal = document.getElementById('introModal');
+            const confirmBtn = document.getElementById('confirmBtn');
+
+            // 当前风格预设
+            let currentStyle = 'classic';
+            // 当前背景颜色（画布背景）
+            let canvasBackground = 'transparent';
+
+            // 样式映射：每个预设包含额外绘制属性
+            const stylePresets = {
+                classic: {
+                    strokeStyle: null,
+                    lineWidth: 0,
+                    shadowBlur: 0,
+                    shadowColor: 'transparent',
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    gradient: false,
+                    neon: false,
+                    letterSpacing: 0,
+                },
+                modern: {
+                    strokeStyle: null,
+                    lineWidth: 0,
+                    shadowBlur: 12,
+                    shadowColor: 'rgba(0,0,0,0.6)',
+                    shadowOffsetX: 4,
+                    shadowOffsetY: 6,
+                    gradient: true,
+                    neon: false,
+                    letterSpacing: 2,
+                },
+                elegant: {
+                    strokeStyle: null,
+                    lineWidth: 0,
+                    shadowBlur: 20,
+                    shadowColor: 'rgba(150, 100, 50, 0.5)',
+                    shadowOffsetX: 3,
+                    shadowOffsetY: 5,
+                    gradient: true,
+                    neon: false,
+                    letterSpacing: 5,
+                },
+                vintage: {
+                    strokeStyle: 'rgba(80, 50, 20, 0.8)',
+                    lineWidth: 2,
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(0,0,0,0.7)',
+                    shadowOffsetX: 2,
+                    shadowOffsetY: 3,
+                    gradient: false,
+                    neon: false,
+                    letterSpacing: 3,
+                },
+                shadow: {
+                    strokeStyle: null,
+                    lineWidth: 0,
+                    shadowBlur: 18,
+                    shadowColor: 'rgba(0,0,0,0.8)',
+                    shadowOffsetX: 8,
+                    shadowOffsetY: 10,
+                    gradient: false,
+                    neon: false,
+                    letterSpacing: 0,
+                },
+                neon: {
+                    strokeStyle: null,
+                    lineWidth: 0,
+                    shadowBlur: 30,
+                    shadowColor: 'currentColor',
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    gradient: false,
+                    neon: true,
+                    letterSpacing: 1,
+                }
+            };
+
+            // 初始化激活样式按钮
+            function setActiveStyleButton(styleName) {
+                styleButtons.forEach(btn => {
+                    const btnStyle = btn.getAttribute('data-style');
+                    if (btnStyle === styleName) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // 获取当前样式预设
+            function getPreset() {
+                return stylePresets[currentStyle] || stylePresets.classic;
+            }
+
+            // 绘制签名
+            function drawSignature() {
+                const text = signTextInput.value.trim() || '签名';
+                const fontFamily = fontSelect.value;
+                const fontSize = parseInt(fontSizeRange.value, 10);
+                const color = colorPicker.value;
+                const rotation = parseInt(rotateRange.value, 10);
+                const horizontalOffset = parseInt(offsetRange.value, 10);
+                const italic = italicCheck.checked;
+                const bold = boldCheck.checked;
+                const underline = underlineCheck.checked;
+                
+                // 清空画布
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 设置画布背景
+                if (canvasBackground !== 'transparent') {
+                    ctx.fillStyle = canvasBackground;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // 保存上下文
+                ctx.save();
+                
+                // 应用旋转（围绕画布中心）
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.translate(-centerX, -centerY);
+                
+                // 构建字体字符串
+                let fontStyle = '';
+                if (italic) fontStyle += 'italic ';
+                if (bold) fontStyle += 'bold ';
+                fontStyle += `${fontSize}px `;
+                fontStyle += fontFamily;
+                ctx.font = fontStyle;
+                
+                // 获取预设
+                const preset = getPreset();
+                
+                // 设置阴影
+                if (preset.neon && preset.shadowColor === 'currentColor') {
+                    ctx.shadowColor = color;
+                } else {
+                    ctx.shadowColor = preset.shadowColor;
+                }
+                ctx.shadowBlur = preset.shadowBlur;
+                ctx.shadowOffsetX = preset.shadowOffsetX;
+                ctx.shadowOffsetY = preset.shadowOffsetY;
+                
+                // 设置描边（复古或特殊风格）
+                if (preset.strokeStyle) {
+                    ctx.strokeStyle = preset.strokeStyle;
+                    ctx.lineWidth = preset.lineWidth;
+                    ctx.strokeText(text, centerX + horizontalOffset, centerY + fontSize * 0.35);
+                }
+                
+                // 渐变填充
+                if (preset.gradient) {
+                    const textWidth = ctx.measureText(text).width;
+                    const gradient = ctx.createLinearGradient(centerX + horizontalOffset - textWidth/2, centerY - fontSize/2, 
+                                                              centerX + horizontalOffset + textWidth/2, centerY + fontSize/2);
+                    gradient.addColorStop(0, color);
+                    gradient.addColorStop(0.7, '#ffffff');
+                    gradient.addColorStop(1, color);
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = color;
+                }
+                
+                // 绘制文字（应用水平偏移）
+                const textX = centerX + horizontalOffset;
+                const textY = centerY + fontSize * 0.35;
+                ctx.fillText(text, textX, textY);
+                
+                // 添加下划线（如果勾选）
+                if (underline) {
+                    const textWidth = ctx.measureText(text).width;
+                    const underlineY = textY + fontSize * 0.15;
+                    ctx.beginPath();
+                    ctx.moveTo(textX - textWidth/2, underlineY);
+                    ctx.lineTo(textX + textWidth/2, underlineY);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = Math.max(2, fontSize * 0.06);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+
+            // 更新滑块显示
+            function updateSliderDisplay() {
+                fontSizeValue.textContent = fontSizeRange.value;
+                rotateValue.textContent = rotateRange.value;
+                offsetValue.textContent = offsetRange.value;
+            }
+
+            // 事件监听
+            function attachEvents() {
+                signTextInput.addEventListener('input', drawSignature);
+                fontSelect.addEventListener('change', drawSignature);
+                colorPicker.addEventListener('input', drawSignature);
+                fontSizeRange.addEventListener('input', function() {
+                    updateSliderDisplay();
+                    drawSignature();
+                });
+                rotateRange.addEventListener('input', function() {
+                    updateSliderDisplay();
+                    drawSignature();
+                });
+                offsetRange.addEventListener('input', function() {
+                    updateSliderDisplay();
+                    drawSignature();
+                });
+                italicCheck.addEventListener('change', drawSignature);
+                boldCheck.addEventListener('change', drawSignature);
+                underlineCheck.addEventListener('change', drawSignature);
+
+                // 快速颜色按钮
+                blackColorBtn.addEventListener('click', function() {
+                    colorPicker.value = '#000000';
+                    drawSignature();
+                });
+                whiteColorBtn.addEventListener('click', function() {
+                    colorPicker.value = '#ffffff';
+                    drawSignature();
+                });
+
+                // 背景颜色按钮
+                blackBgBtn.addEventListener('click', function() {
+                    canvasBackground = '#000000';
+                    drawSignature();
+                });
+                whiteBgBtn.addEventListener('click', function() {
+                    canvasBackground = '#ffffff';
+                    drawSignature();
+                });
+                greenBgBtn.addEventListener('click', function() {
+                    canvasBackground = '#00FF00';
+                    drawSignature();
+                });
+
+                // 风格按钮
+                styleButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const style = this.getAttribute('data-style');
+                        currentStyle = style;
+                        setActiveStyleButton(style);
+                        drawSignature();
+                    });
+                });
+
+                // 下载
+                downloadBtn.addEventListener('click', function() {
+                    const link = document.createElement('a');
+                    link.download = '签名_' + Date.now() + '.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+
+                // 复制画布到剪贴板
+                copyBtn.addEventListener('click', function() {
+                    canvas.toBlob(function(blob) {
+                        try {
+                            navigator.clipboard.write([
+                                new ClipboardItem({
+                                    'image/png': blob
+                                })
+                            ]).then(() => {
+                                alert('✅ 签名已复制到剪贴板！');
+                            }).catch(err => {
+                                alert('⚠️ 复制失败，请尝试下载。');
+                            });
+                        } catch (e) {
+                            alert('您的浏览器不支持复制图片，请使用下载功能。');
+                        }
+                    });
+                });
+
+                // 随机风格
+                randomBtn.addEventListener('click', function() {
+                    const styles = Object.keys(stylePresets);
+                    const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+                    currentStyle = randomStyle;
+                    setActiveStyleButton(randomStyle);
+                    
+                    // 随机字体
+                    const fonts = [
+                        "'Alex Brush', cursive",
+                        "'Allura', cursive",
+                        "'UnifrakturMaguntia', cursive",
+                        "'IM Fell English SC', serif",
+                        "'Rochester', cursive",
+                        "'Italianno', cursive",
+                        "'Great Vibes', cursive",
+                        "'Pacifico', cursive",
+                        "'Caveat', cursive",
+                        "'Dancing Script', cursive",
+                        "'Parisienne', cursive",
+                        "'Satisfy', cursive",
+                        "'Kaushan Script', cursive",
+                        "'Yellowtail', cursive",
+                        "'Ma Shan Zheng', cursive",
+                        "'ZCOOL XiaoWei', serif",
+                        "'Noto Serif SC', serif"
+                    ];
+                    fontSelect.value = fonts[Math.floor(Math.random() * fonts.length)];
+                    
+                    // 随机颜色
+                    const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                    colorPicker.value = randomColor;
+                    
+                    // 随机大小
+                    const randSize = Math.floor(Math.random() * (130 - 40) + 40);
+                    fontSizeRange.value = randSize;
+                    updateSliderDisplay();
+                    
+                    // 随机旋转
+                    const randRot = Math.floor(Math.random() * 21) - 10;
+                    rotateRange.value = randRot;
+                    updateSliderDisplay();
+                    
+                    // 随机水平偏移
+                    const randOffset = Math.floor(Math.random() * 160) - 80;
+                    offsetRange.value = randOffset;
+                    updateSliderDisplay();
+                    
+                    // 随机斜体/粗体/下划线
+                    italicCheck.checked = Math.random() < 0.3;
+                    boldCheck.checked = Math.random() < 0.7;
+                    underlineCheck.checked = Math.random() < 0.2;
+                    
+                    drawSignature();
+                });
+
+                // 确认按钮关闭弹窗（新增）
+                confirmBtn.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // 初始绘制
+            function init() {
+                updateSliderDisplay();
+                drawSignature();
+                setActiveStyleButton('classic');
+            }
+
+            // 确保DOM加载完成后再初始化
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    attachEvents();
+                    init();
+                });
+            } else {
+                attachEvents();
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
