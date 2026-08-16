@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>手机检测工具</title>
+    <style>
+        :root {
+            --bg: #111111;
+            --bg-card: #1a1a1a;
+            --bg-hover: #222222;
+            --border: #2e2e2e;
+            --text: #d4d4d4;
+            --text-dim: #7a7a7a;
+            --text-bright: #f0f0f0;
+            --mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+            --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --radius: 3px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            font-family: var(--sans);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============ 主页面 ============ */
+        #home-page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .home-header {
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .home-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-bright);
+            letter-spacing: 0.5px;
+            font-family: var(--mono);
+        }
+        .home-header .subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 2px;
+            font-family: var(--mono);
+            letter-spacing: 0.3px;
+        }
+
+        .brightness-notice {
+            margin: 12px 18px 4px;
+            padding: 8px 12px;
+            border: 1px solid #ffffff;
+            border-radius: var(--radius);
+            font-family: var(--mono);
+            font-size: 11px;
+            color: #ffffff;
+            text-align: center;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .test-groups {
+            flex: 1;
+            padding: 10px 0 60px;
+        }
+        .test-group-title {
+            padding: 12px 18px 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-family: var(--mono);
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        .test-group-title:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 13px 18px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.12s ease;
+            position: relative;
+            min-height: 52px;
+        }
+        .test-item:active {
+            background: var(--bg-hover);
+        }
+        .test-item .test-index {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            width: 28px;
+            flex-shrink: 0;
+        }
+        .test-item .test-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            flex: 1;
+            letter-spacing: 0.2px;
+        }
+        .test-item .test-desc {
+            font-size: 10px;
+            color: var(--text-dim);
+            flex-shrink: 0;
+            font-family: var(--mono);
+            letter-spacing: 0.3px;
+            max-width: 40%;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .test-item .test-arrow {
+            color: var(--text-dim);
+            font-size: 16px;
+            margin-left: 10px;
+            flex-shrink: 0;
+            font-family: var(--mono);
+        }
+
+        .home-footer {
+            padding: 14px 18px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            letter-spacing: 0.5px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            background: var(--bg);
+            position: sticky;
+            bottom: 0;
+        }
+
+        /* ============ 测试页面通用 ============ */
+        .test-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            touch-action: none;
+            -webkit-touch-callout: none;
+        }
+        .test-page.active {
+            display: flex;
+        }
+
+        .test-page-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            pointer-events: none;
+        }
+        .test-page-header .tp-title {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            pointer-events: auto;
+        }
+        .test-page-header .tp-exit {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--radius);
+            cursor: pointer;
+            pointer-events: auto;
+            font-family: var(--mono);
+            transition: background 0.15s;
+            z-index: 999;
+        }
+        .test-page-header .tp-exit:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .test-page-header .tp-dim-btn {
+            position: absolute;
+            right: 70px;
+            top: 12px;
+            width: 42px;
+            height: 42px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .test-page-header .tp-dim-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .dim-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+        }
+
+        .test-page-content {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .test-page-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            letter-spacing: 0.3px;
+            z-index: 150;
+            pointer-events: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ============ 坏点检测 ============ */
+        #deadpixel-page .test-page-content {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .deadpixel-info {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            text-align: center;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .deadpixel-controls {
+            position: absolute;
+            top: 55px;
+            right: 14px;
+            z-index: 110;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .deadpixel-controls button {
+            width: 38px;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius);
+            font-size: 11px;
+            cursor: pointer;
+            font-family: var(--mono);
+            background: rgba(0, 0, 0, 0.55);
+            color: #fff;
+            letter-spacing: 0;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .deadpixel-controls button:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .deadpixel-controls button.active-btn {
+            background: rgba(255, 255, 255, 0.35);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ============ 多点触控 ============ */
+        #multitouch-page .test-page-content {
+            background: #0a0a0a;
+            cursor: crosshair;
+        }
+        #multitouch-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+        }
+        .mt-stats {
+            position: absolute;
+            top: 50px;
+            left: 14px;
+            z-index: 100;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.3px;
+            line-height: 1.7;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .mt-stats .mt-value {
+            color: #ffd54f;
+            font-weight: 600;
+        }
+
+        /* ============ 彩条测试 ============ */
+        #colorbar-page .test-page-content {
+            flex-direction: column;
+            cursor: pointer;
+            align-items: stretch;
+        }
+        .colorbar-strip {
+            flex: 1;
+            width: 100%;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .colorbar-strip span {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+        .colorbar-strip.light-text span {
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+        }
+        .cb-indicator {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 11px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 12px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============ 灰阶测试 ============ */
+        #grayscale-page .test-page-content {
+            cursor: pointer;
+        }
+        .gs-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .gs-step {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+            transition: all 0.1s;
+        }
+        .gs-step span {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: rgba(128, 128, 128, 0.7);
+            letter-spacing: 0.5px;
+        }
+        .gs-step.light span {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .gs-step.dark span {
+            color: rgba(0, 0, 0, 0.5);
+        }
+        .gs-hint {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.55);
+            padding: 4px 12px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.4px;
+        }
+
+        /* ============ 可控区域测试 ============ */
+        #toucharea-page .test-page-content {
+            background: #0d0d0d;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+        #toucharea-grid {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            gap: 1px;
+            background: #222;
+            touch-action: none;
+        }
+        .ta-cell {
+            background: #1a1a1a;
+            transition: background 0.08s ease;
+            border-radius: 0;
+            min-width: 0;
+            min-height: 0;
+        }
+        .ta-cell.covered {
+            background: #2e7d32;
+        }
+        .ta-cell.partial {
+            background: #558b2f;
+        }
+        .ta-stats {
+            position: absolute;
+            top: 50px;
+            right: 14px;
+            z-index: 100;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.3px;
+            line-height: 1.7;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            text-align: right;
+        }
+        .ta-stats .ta-value {
+            color: #4caf50;
+            font-weight: 600;
+        }
+        .ta-reset-btn {
+            position: absolute;
+            top: 50px;
+            left: 14px;
+            z-index: 110;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius);
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-family: var(--mono);
+            font-size: 11px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            pointer-events: auto;
+            transition: all 0.15s;
+        }
+        .ta-reset-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ============ 触摸延迟测试 ============ */
+        #latency-page .test-page-content {
+            background: #0d0d0d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: crosshair;
+            flex-direction: column;
+        }
+        .latency-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            touch-action: none;
+        }
+        .latency-display {
+            font-family: var(--mono);
+            font-size: 42px;
+            color: #fff;
+            letter-spacing: 2px;
+            pointer-events: none;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        .latency-display .unit {
+            font-size: 14px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .latency-sub {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        .latency-avg {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: #ffd54f;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+        }
+        .latency-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+            transition: opacity 0.1s;
+        }
+
+        /* ============ 色域测试 ============ */
+        #colorgamut-page .test-page-content {
+            cursor: pointer;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .cg-swatch {
+            width: 25%;
+            height: 25%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            transition: all 0.1s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .cg-swatch span {
+            font-family: var(--mono);
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        }
+        .cg-hint {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.55);
+            padding: 4px 12px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+        /* ============ 亮度均匀性 ============ */
+        #uniformity-page .test-page-content {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .uniformity-info {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            pointer-events: none;
+            letter-spacing: 0.4px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+        }
+
+        /* ============ 响应式调整 ============ */
+        @media (max-width: 380px) {
+            .test-item {
+                padding: 11px 14px;
+                min-height: 46px;
+            }
+            .test-item .test-name {
+                font-size: 13px;
+            }
+            .test-item .test-desc {
+                font-size: 9px;
+                max-width: 35%;
+            }
+            .home-header h1 {
+                font-size: 16px;
+            }
+            .brightness-notice {
+                font-size: 10px;
+                padding: 6px 10px;
+                margin: 8px 14px 2px;
+            }
+            .latency-display {
+                font-size: 32px;
+            }
+            .mt-stats {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+            .ta-stats {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+            .tp-exit {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
+            .tp-dim-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                right: 60px;
+                top: 14px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .test-item {
+                padding: 16px 22px;
+                min-height: 58px;
+            }
+            .test-item .test-name {
+                font-size: 15px;
+            }
+            .home-header {
+                padding: 20px 22px 12px;
+            }
+            .home-header h1 {
+                font-size: 22px;
+            }
+            .brightness-notice {
+                margin: 16px 22px 6px;
+                font-size: 12px;
+            }
+            .cg-swatch {
+                width: 20%;
+                height: 20%;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .test-item {
+                padding: 9px 18px;
+                min-height: 40px;
+            }
+            .test-item .test-name {
+                font-size: 12px;
+            }
+            .test-item .test-desc {
+                font-size: 9px;
+                max-width: 30%;
+            }
+            .home-header {
+                padding: 10px 18px 6px;
+            }
+            .home-header h1 {
+                font-size: 15px;
+            }
+            .test-group-title {
+                padding: 6px 18px 2px;
+                font-size: 9px;
+            }
+            .brightness-notice {
+                font-size: 9px;
+                padding: 4px 8px;
+                margin: 6px 14px 2px;
+            }
+            .mt-stats {
+                top: 40px;
+                font-size: 10px;
+                padding: 4px 8px;
+                line-height: 1.5;
+            }
+            .ta-stats {
+                top: 40px;
+                font-size: 10px;
+                padding: 4px 8px;
+                line-height: 1.5;
+            }
+            .deadpixel-controls {
+                top: 42px;
+                right: 8px;
+                gap: 4px;
+            }
+            .deadpixel-controls button {
+                width: 30px;
+                height: 26px;
+                font-size: 9px;
+            }
+            .tp-exit {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            .tp-dim-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+                right: 52px;
+                top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 主页面 ==================== -->
+    <div id="home-page">
+        <div class="home-header">
+            <h1>SCREEN DIAGNOSTICS</h1>
+            <div class="subtitle">手机屏幕检测工具 &middot; v1.6</div>
+        </div>
+
+        <div class="brightness-notice">在进行手机屏幕测试时请把手机亮度调到最高</div>
+
+        <div class="test-groups">
+            <div class="test-group-title">显示测试 / Display</div>
+            <div class="test-item" data-test="deadpixel">
+                <span class="test-index">01</span>
+                <span class="test-name">屏幕坏点检测</span>
+                <span class="test-desc">Dead Pixel Test</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="colorbar">
+                <span class="test-index">02</span>
+                <span class="test-name">彩条测试</span>
+                <span class="test-desc">SMPTE Color Bars</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="grayscale">
+                <span class="test-index">03</span>
+                <span class="test-name">灰阶测试</span>
+                <span class="test-desc">Grayscale Steps</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="colorgamut">
+                <span class="test-index">04</span>
+                <span class="test-name">色域测试</span>
+                <span class="test-desc">Color Gamut</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="uniformity">
+                <span class="test-index">05</span>
+                <span class="test-name">亮度均匀性</span>
+                <span class="test-desc">Luminance Uniformity</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+
+            <div class="test-group-title">触摸测试 / Touch</div>
+            <div class="test-item" data-test="multitouch">
+                <span class="test-index">06</span>
+                <span class="test-name">多点触控检测</span>
+                <span class="test-desc">Multi-touch Test</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="toucharea">
+                <span class="test-index">07</span>
+                <span class="test-name">可控区域测试</span>
+                <span class="test-desc">Touch Coverage</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+            <div class="test-item" data-test="latency">
+                <span class="test-index">08</span>
+                <span class="test-name">触摸延迟测试</span>
+                <span class="test-desc">Touch Latency</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+
+            <div class="test-group-title">性能测试 / Performance</div>
+            <!-- 修复了性能测试跳转链接，移除了多余的单引号 -->
+            <div class="test-item" id="performance-test-link" onclick="window.location.href='https://rachel9826.github.io/performance.html'">
+                <span class="test-index">09</span>
+                <span class="test-name">性能测试（外部）</span>
+                <span class="test-desc">Performance</span>
+                <span class="test-arrow">&#8250;</span>
+            </div>
+        </div>
+
+        <div class="home-footer">&copy; Brian &middot; Screen Diagnostics Tool</div>
+    </div>
+
+    <!-- ==================== 坏点检测 ==================== -->
+    <div id="deadpixel-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">坏点检测</span>
+            <button class="tp-exit" onclick="exitTest('deadpixel')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="deadpixel-content">
+            <div class="deadpixel-info" id="deadpixel-info">白色 #FFFFFF &middot; 点击屏幕切换颜色</div>
+            <div class="deadpixel-controls" id="deadpixel-controls">
+                <button data-color="#FFFFFF" title="白色">W</button>
+                <button data-color="#000000" title="黑色">K</button>
+                <button data-color="#FF0000" title="红色">R</button>
+                <button data-color="#00FF00" title="绿色">G</button>
+                <button data-color="#0000FF" title="蓝色">B</button>
+                <button data-color="#808080" title="灰色">Gy</button>
+                <button data-color="#FFFF00" title="黄色">Y</button>
+                <button data-color="#00FFFF" title="青色">C</button>
+                <button data-color="#FF00FF" title="品红">M</button>
+                <button id="deadpixel-auto" title="自动循环">Auto</button>
+            </div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 多点触控 ==================== -->
+    <div id="multitouch-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">多点触控检测</span>
+            <button class="tp-exit" onclick="exitTest('multitouch')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="multitouch-content">
+            <canvas id="multitouch-canvas"></canvas>
+            <div class="mt-stats" id="mt-stats">
+                当前触点: <span class="mt-value">0</span><br>
+                最大触点: <span class="mt-value" id="mt-max">0</span><br>
+                支持触点: <span class="mt-value" id="mt-supported">--</span>
+            </div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 彩条测试 ==================== -->
+    <div id="colorbar-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">彩条测试</span>
+            <button class="tp-exit" onclick="exitTest('colorbar')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="colorbar-content">
+            <div class="colorbar-strip light-text" style="background:#FFFFFF;"><span>白</span></div>
+            <div class="colorbar-strip" style="background:#FFFF00;"><span>黄</span></div>
+            <div class="colorbar-strip light-text" style="background:#00FFFF;"><span>青</span></div>
+            <div class="colorbar-strip light-text" style="background:#00FF00;"><span>绿</span></div>
+            <div class="colorbar-strip light-text" style="background:#FF00FF;"><span>品红</span></div>
+            <div class="colorbar-strip light-text" style="background:#FF0000;"><span>红</span></div>
+            <div class="colorbar-strip light-text" style="background:#0000FF;"><span>蓝</span></div>
+            <div class="colorbar-strip light-text" style="background:#000000;"><span>黑</span></div>
+            <div class="cb-indicator">SMPTE 彩条 &middot; 点击切换方向</div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 灰阶测试 ==================== -->
+    <div id="grayscale-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">灰阶测试</span>
+            <button class="tp-exit" onclick="exitTest('grayscale')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="grayscale-content">
+            <div class="gs-container" id="gs-container"></div>
+            <div class="gs-hint">16级灰阶 &middot; 观察过渡是否平滑</div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 可控区域测试 ==================== -->
+    <div id="toucharea-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">可控区域测试</span>
+            <button class="tp-exit" onclick="exitTest('toucharea')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="toucharea-content">
+            <div id="toucharea-grid"></div>
+            <button class="ta-reset-btn" id="ta-reset">重置</button>
+            <div class="ta-stats">
+                覆盖: <span class="ta-value" id="ta-coverage">0%</span><br>
+                已测试: <span class="ta-value" id="ta-tested">0</span>/<span id="ta-total">0</span>
+            </div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 触摸延迟测试 ==================== -->
+    <div id="latency-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">触摸延迟测试</span>
+            <button class="tp-exit" onclick="exitTest('latency')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="latency-content">
+            <div class="latency-area" id="latency-area">
+                <div class="latency-display" id="latency-display">--<span class="unit"> ms</span></div>
+                <div class="latency-avg" id="latency-avg">平均: -- ms</div>
+                <div class="latency-sub">连续点击屏幕测试触摸响应延迟</div>
+            </div>
+            <div class="latency-dot" id="latency-dot" style="display:none;"></div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 色域测试 ==================== -->
+    <div id="colorgamut-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">色域测试</span>
+            <button class="tp-exit" onclick="exitTest('colorgamut')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="colorgamut-content">
+            <div class="cg-hint">观察各色彩饱和度与准确性</div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <!-- ==================== 亮度均匀性 ==================== -->
+    <div id="uniformity-page" class="test-page">
+        <div class="test-page-header">
+            <span class="tp-title">亮度均匀性</span>
+            <button class="tp-exit" onclick="exitTest('uniformity')">&#10005;</button>
+            <button class="tp-dim-btn" onclick="toggleDim(this)">🌙</button>
+        </div>
+        <div class="dim-overlay"></div>
+        <div class="test-page-content" id="uniformity-content">
+            <div class="uniformity-info">白色 100% &middot; 点击切换亮度</div>
+        </div>
+        <div class="test-page-footer">&copy; Brian</div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ==================== 通用工具 ====================
+            const testPages = document.querySelectorAll('.test-page');
+            const homePage = document.getElementById('home-page');
+            const wakeLockRef = { current: null };
+
+            function showPage(pageId) {
+                homePage.style.display = 'none';
+                testPages.forEach(p => p.classList.remove('active'));
+                const page = document.getElementById(pageId + '-page');
+                if (page) page.classList.add('active');
+            }
+
+            function showHome() {
+                testPages.forEach(p => p.classList.remove('active'));
+                homePage.style.display = 'flex';
+            }
+
+            async function requestWakeLock() {
+                try {
+                    if ('wakeLock' in navigator) {
+                        wakeLockRef.current = await navigator.wakeLock.request('screen');
+                    }
+                } catch (e) {}
+            }
+
+            async function releaseWakeLock() {
+                try {
+                    if (wakeLockRef.current) {
+                        await wakeLockRef.current.release();
+                        wakeLockRef.current = null;
+                    }
+                } catch (e) {}
+            }
+
+            async function enterFullscreen() {
+                const el = document.documentElement;
+                try {
+                    if (el.requestFullscreen) {
+                        await el.requestFullscreen().catch(() => {});
+                    } else if (el.webkitRequestFullscreen) {
+                        await el.webkitRequestFullscreen().catch(() => {});
+                    } else if (el.mozRequestFullScreen) {
+                        await el.mozRequestFullScreen().catch(() => {});
+                    }
+                } catch (e) {}
+            }
+
+            async function exitFullscreen() {
+                try {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen().catch(() => {});
+                    } else if (document.webkitExitFullscreen) {
+                        await document.webkitExitFullscreen().catch(() => {});
+                    } else if (document.mozCancelFullScreen) {
+                        await document.mozCancelFullScreen().catch(() => {});
+                    }
+                } catch (e) {}
+            }
+
+            window.exitTest = async function(testId) {
+                cleanupTest(testId);
+                try {
+                    await releaseWakeLock();
+                    await exitFullscreen();
+                } catch (e) {}
+                setTimeout(() => {
+                    showHome();
+                }, 50);
+            };
+
+            window.toggleDim = function(btn) {
+                const page = btn.closest('.test-page');
+                let overlay = page.querySelector('.dim-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'dim-overlay';
+                    page.appendChild(overlay);
+                }
+                const isDimmed = overlay.style.display !== 'block';
+                overlay.style.display = isDimmed ? 'block' : 'none';
+                btn.textContent = isDimmed ? '☀️' : '🌙';
+            };
+
+            function addGlobalExitGesture() {
+                let lastTapTime = 0;
+                document.addEventListener('touchstart', function(e) {
+                    if (e.touches.length === 3) {
+                        const now = Date.now();
+                        if (now - lastTapTime < 350) {
+                            const activePage = document.querySelector('.test-page.active');
+                            if (activePage) {
+                                const testId = activePage.id.replace('-page', '');
+                                exitTest(testId);
+                            }
+                            lastTapTime = 0;
+                        } else {
+                            lastTapTime = now;
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            const testStates = {};
+
+            function initTestState(testId) {
+                if (!testStates[testId]) testStates[testId] = {};
+                return testStates[testId];
+            }
+
+            function cleanupTest(testId) {
+                const state = testStates[testId];
+                if (state && state.cleanup) {
+                    state.cleanup();
+                    state.cleanup = null;
+                }
+            }
+
+            async function enterTest(testId) {
+                showPage(testId);
+                requestWakeLock();
+                enterFullscreen();
+                initTest(testId);
+            }
+
+            function initTest(testId) {
+                switch (testId) {
+                    case 'deadpixel': initDeadPixel(); break;
+                    case 'multitouch': initMultiTouch(); break;
+                    case 'colorbar': initColorBar(); break;
+                    case 'grayscale': initGrayscale(); break;
+                    case 'toucharea': initTouchArea(); break;
+                    case 'latency': initLatency(); break;
+                    case 'colorgamut': initColorGamut(); break;
+                    case 'uniformity': initUniformity(); break;
+                }
+            }
+
+            // 主页内部测试项绑定
+            document.querySelectorAll('.test-item[data-test]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const testId = this.getAttribute('data-test');
+                    if (testId) enterTest(testId);
+                });
+            });
+
+            // ==================== 坏点检测 ====================
+            const deadPixelColors = [
+                { name: '白色', hex: '#FFFFFF' },
+                { name: '黑色', hex: '#000000' },
+                { name: '红色', hex: '#FF0000' },
+                { name: '绿色', hex: '#00FF00' },
+                { name: '蓝色', hex: '#0000FF' },
+                { name: '50%灰色', hex: '#808080' },
+                { name: '黄色', hex: '#FFFF00' },
+                { name: '青色', hex: '#00FFFF' },
+                { name: '品红', hex: '#FF00FF' },
+            ];
+
+            function isLightColor(hex) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return (r * 0.299 + g * 0.587 + b * 0.114) > 160;
+            }
+
+            function initDeadPixel() {
+                const content = document.getElementById('deadpixel-content');
+                const info = document.getElementById('deadpixel-info');
+                const state = initTestState('deadpixel');
+                state.currentIndex = state.currentIndex || 0;
+                state.autoMode = state.autoMode || false;
+                state.autoTimer = null;
+
+                function applyColor(index) {
+                    index = (index + deadPixelColors.length) % deadPixelColors.length;
+                    state.currentIndex = index;
+                    const c = deadPixelColors[index];
+                    content.style.backgroundColor = c.hex;
+                    const textColor = isLightColor(c.hex) ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)';
+                    info.style.color = textColor;
+                    info.style.background = isLightColor(c.hex) ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+                    info.textContent = c.name + ' ' + c.hex + ' · 点击切换 (' + (index + 1) + '/' + deadPixelColors.length + ')';
+                    updateButtonStates();
+                }
+
+                function updateButtonStates() {
+                    document.querySelectorAll('#deadpixel-controls button[data-color]').forEach(btn => {
+                        const bc = btn.getAttribute('data-color').toUpperCase();
+                        const current = deadPixelColors[state.currentIndex].hex.toUpperCase();
+                        btn.classList.toggle('active-btn', bc === current);
+                    });
+                    const autoBtn = document.getElementById('deadpixel-auto');
+                    if (autoBtn) autoBtn.classList.toggle('active-btn', state.autoMode);
+                }
+
+                function nextColor() { applyColor(state.currentIndex + 1); }
+                function prevColor() { applyColor(state.currentIndex - 1); }
+                function toggleAuto() {
+                    state.autoMode = !state.autoMode;
+                    if (state.autoMode) {
+                        state.autoTimer = setInterval(nextColor, 2000);
+                    } else {
+                        if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
+                    }
+                    updateButtonStates();
+                }
+
+                if (state.cleanup) state.cleanup();
+
+                const handleClick = function(e) {
+                    if (e.target.closest('.deadpixel-controls')) return;
+                    nextColor();
+                };
+                const handleTouch = function(e) {
+                    if (e.target.closest('.deadpixel-controls')) return;
+                    if (e.cancelable) e.preventDefault();
+                    nextColor();
+                };
+                const handleKey = function(e) {
+                    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextColor(); }
+                    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevColor(); }
+                    else if (e.key === 'a' || e.key === 'A') { toggleAuto(); }
+                    else if (e.key === 'Escape') { exitTest('deadpixel'); }
+                };
+
+                content.addEventListener('click', handleClick);
+                content.addEventListener('touchend', handleTouch);
+                document.addEventListener('keydown', handleKey);
+
+                document.querySelectorAll('#deadpixel-controls button[data-color]').forEach(btn => {
+                    btn.onclick = function(e) {
+                        e.stopPropagation();
+                        const hex = this.getAttribute('data-color');
+                        const idx = deadPixelColors.findIndex(c => c.hex === hex);
+                        if (idx >= 0) {
+                            if (state.autoMode) toggleAuto();
+                            applyColor(idx);
+                        }
+                    };
+                });
+
+                const autoBtn = document.getElementById('deadpixel-auto');
+                if (autoBtn) {
+                    autoBtn.onclick = function(e) { e.stopPropagation(); toggleAuto(); };
+                }
+
+                state.cleanup = function() {
+                    content.removeEventListener('click', handleClick);
+                    content.removeEventListener('touchend', handleTouch);
+                    document.removeEventListener('keydown', handleKey);
+                    if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
+                    state.autoMode = false;
+                };
+
+                applyColor(state.currentIndex);
+            }
+
+            // ==================== 多点触控 ====================
+            function initMultiTouch() {
+                const canvas = document.getElementById('multitouch-canvas');
+                const content = document.getElementById('multitouch-content');
+                const ctx = canvas.getContext('2d');
+                const state = initTestState('multitouch');
+                state.maxTouches = state.maxTouches || 0;
+
+                const mtSupported = navigator.maxTouchPoints || 'N/A';
+                document.getElementById('mt-supported').textContent = mtSupported;
+
+                function resizeCanvas() {
+                    canvas.width = content.clientWidth || window.innerWidth;
+                    canvas.height = content.clientHeight || window.innerHeight;
+                }
+                resizeCanvas();
+
+                function draw(touches) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const touchArray = touches || [];
+                    const count = touchArray.length;
+                    if (count > state.maxTouches) state.maxTouches = count;
+                    document.querySelector('#mt-stats .mt-value').textContent = count;
+                    document.getElementById('mt-max').textContent = state.maxTouches;
+
+                    for (let i = 0; i < touchArray.length; i++) {
+                        const t = touchArray[i];
+                        const x = t.clientX || t.pageX || 0;
+                        const y = t.clientY || t.pageY || 0;
+                        ctx.beginPath(); ctx.arc(x, y, 34, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(i + 1), x, y);
+                        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '9px monospace'; ctx.fillText(Math.round(x) + ',' + Math.round(y), x, y + 30);
+                    }
+                }
+
+                function handleTouchStart(e) { if (e.cancelable) e.preventDefault(); draw(e.touches); }
+                function handleTouchMove(e) { if (e.cancelable) e.preventDefault(); draw(e.touches); }
+                function handleTouchEnd(e) { if (e.cancelable) e.preventDefault(); draw(e.touches); }
+                function handleTouchCancel(e) { if (e.cancelable) e.preventDefault(); draw(e.touches); }
+                function handleResize() { resizeCanvas(); draw([]); }
+                function handleKey(e) { if (e.key === 'Escape') exitTest('multitouch'); }
+
+                if (state.cleanup) state.cleanup();
+
+                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+                canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+                canvas.addEventListener('touchcancel', handleTouchCancel, { passive: false });
+                window.addEventListener('resize', handleResize);
+                document.addEventListener('keydown', handleKey);
+
+                state.cleanup = function() {
+                    canvas.removeEventListener('touchstart', handleTouchStart);
+                    canvas.removeEventListener('touchmove', handleTouchMove);
+                    canvas.removeEventListener('touchend', handleTouchEnd);
+                    canvas.removeEventListener('touchcancel', handleTouchCancel);
+                    window.removeEventListener('resize', handleResize);
+                    document.removeEventListener('keydown', handleKey);
+                };
+
+                draw([]);
+            }
+
+            // ==================== 彩条测试 ====================
+            function initColorBar() {
+                const content = document.getElementById('colorbar-content');
+                const state = initTestState('colorbar');
+                state.horizontal = state.horizontal !== undefined ? state.horizontal : false;
+
+                function applyDirection() {
+                    content.style.flexDirection = state.horizontal ? 'row' : 'column';
+                    const strips = content.querySelectorAll('.colorbar-strip');
+                    strips.forEach(s => {
+                        s.style.flex = '1';
+                        if (state.horizontal) { s.style.height = '100%'; s.style.width = ''; }
+                        else { s.style.width = '100%'; s.style.height = ''; }
+                    });
+                }
+
+                function toggleDirection() {
+                    state.horizontal = !state.horizontal;
+                    applyDirection();
+                }
+
+                if (state.cleanup) state.cleanup();
+                content.addEventListener('click', toggleDirection);
+                const handleKey = function(e) {
+                    if (e.key === 'Escape') exitTest('colorbar');
+                    else if (e.key === ' ') { e.preventDefault(); toggleDirection(); }
+                };
+                document.addEventListener('keydown', handleKey);
+
+                state.cleanup = function() {
+                    content.removeEventListener('click', toggleDirection);
+                    document.removeEventListener('keydown', handleKey);
+                };
+                applyDirection();
+            }
+
+            // ==================== 灰阶测试 ====================
+            function initGrayscale() {
+                const container = document.getElementById('gs-container');
+                const state = initTestState('grayscale');
+                const steps = 16;
+                container.innerHTML = '';
+                for (let i = 0; i < steps; i++) {
+                    const val = Math.round(i * 255 / (steps - 1));
+                    const hex = '#' + val.toString(16).padStart(2, '0').repeat(3);
+                    const div = document.createElement('div');
+                    div.className = 'gs-step' + (val > 128 ? ' light' : ' dark');
+                    div.style.backgroundColor = hex;
+                    const span = document.createElement('span');
+                    span.textContent = String(val);
+                    div.appendChild(span);
+                    container.appendChild(div);
+                }
+                if (state.cleanup) state.cleanup();
+                const handleKey = function(e) { if (e.key === 'Escape') exitTest('grayscale'); };
+                document.addEventListener('keydown', handleKey);
+                state.cleanup = function() { document.removeEventListener('keydown', handleKey); };
+            }
+
+            // ==================== 可控区域测试 ====================
+            function initTouchArea() {
+                const grid = document.getElementById('toucharea-grid');
+                const content = document.getElementById('toucharea-content');
+                const state = initTestState('toucharea');
+                const cols = state.cols || 8;
+                const rows = state.rows || 14;
+                state.cols = cols; state.rows = rows;
+
+                grid.innerHTML = '';
+                grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+                grid.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+
+                const cells = [];
+                for (let i = 0; i < cols * rows; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'ta-cell';
+                    cell.dataset.index = i;
+                    grid.appendChild(cell);
+                    cells.push(cell);
+                }
+
+                const coveredSet = new Set();
+                const totalCells = cells.length;
+                document.getElementById('ta-total').textContent = totalCells;
+
+                function updateStats() {
+                    const count = coveredSet.size;
+                    const pct = Math.round(count / totalCells * 100);
+                    document.getElementById('ta-coverage').textContent = pct + '%';
+                    document.getElementById('ta-tested').textContent = count;
+                }
+
+                function getCellFromPoint(x, y) {
+                    const gridRect = grid.getBoundingClientRect();
+                    if (x < gridRect.left || x > gridRect.right || y < gridRect.top || y > gridRect.bottom) return null;
+                    const col = Math.floor((x - gridRect.left) / gridRect.width * cols);
+                    const row = Math.floor((y - gridRect.top) / gridRect.height * rows);
+                    if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
+                    return row * cols + col;
+                }
+
+                function markCell(index) {
+                    if (index === null || index === undefined || index < 0 || index >= totalCells) return;
+                    if (!coveredSet.has(index)) {
+                        coveredSet.add(index);
+                        cells[index].classList.add('covered');
+                        updateStats();
+                    }
+                }
+
+                function handleTouch(e) {
+                    if (e.cancelable) e.preventDefault();
+                    const touches = e.touches;
+                    for (let i = 0; i < touches.length; i++) {
+                        const t = touches[i];
+                        const idx = getCellFromPoint(t.clientX, t.clientY);
+                        markCell(idx);
+                    }
+                }
+
+                function handleTouchMove(e) {
+                    if (e.cancelable) e.preventDefault();
+                    const touches = e.touches;
+                    for (let i = 0; i < touches.length; i++) {
+                        const t = touches[i];
+                        const idx = getCellFromPoint(t.clientX, t.clientY);
+                        markCell(idx);
+                    }
+                }
+
+                function handleReset() {
+                    coveredSet.clear();
+                    cells.forEach(c => c.classList.remove('covered'));
+                    updateStats();
+                }
+
+                function handleResize() {}
+
+                if (state.cleanup) state.cleanup();
+
+                grid.addEventListener('touchstart', handleTouch, { passive: false });
+                grid.addEventListener('touchmove', handleTouchMove, { passive: false });
+                window.addEventListener('resize', handleResize);
+                document.getElementById('ta-reset').addEventListener('click', handleReset);
+                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') exitTest('toucharea'); });
+
+                state.cleanup = function() {
+                    grid.removeEventListener('touchstart', handleTouch);
+                    grid.removeEventListener('touchmove', handleTouchMove);
+                    window.removeEventListener('resize', handleResize);
+                    document.getElementById('ta-reset').removeEventListener('click', handleReset);
+                };
+
+                updateStats();
+            }
+
+            // ==================== 触摸延迟测试 ====================
+            function initLatency() {
+                const area = document.getElementById('latency-area');
+                const content = document.getElementById('latency-content');
+                const display = document.getElementById('latency-display');
+                const avgEl = document.getElementById('latency-avg');
+                const dot = document.getElementById('latency-dot');
+                const state = initTestState('latency');
+                state.samples = state.samples || [];
+                state.lastLatency = state.lastLatency || null;
+
+                function updateDisplay() {
+                    if (state.lastLatency !== null) {
+                        display.innerHTML = state.lastLatency.toFixed(1) + '<span class="unit"> ms</span>';
+                    } else {
+                        display.innerHTML = '--<span class="unit"> ms</span>';
+                    }
+                    if (state.samples.length > 0) {
+                        const avg = state.samples.reduce((a, b) => a + b, 0) / state.samples.length;
+                        avgEl.textContent = '平均: ' + avg.toFixed(1) + ' ms (' + state.samples.length + '次)';
+                    } else {
+                        avgEl.textContent = '平均: -- ms';
+                    }
+                }
+
+                function handleTouchStart(e) {
+                    if (e.cancelable) e.preventDefault();
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    const t1 = performance.now();
+                    state.pendingT1 = t1;
+                    state.pendingX = touch.clientX;
+                    state.pendingY = touch.clientY;
+
+                    dot.style.display = 'block';
+                    dot.style.left = touch.clientX + 'px';
+                    dot.style.top = touch.clientY + 'px';
+
+                    requestAnimationFrame(function() {
+                        if (state.pendingT1 !== undefined) {
+                            const t2 = performance.now();
+                            const latency = t2 - state.pendingT1;
+                            state.lastLatency = latency;
+                            if (state.samples.length >= 50) state.samples.shift();
+                            state.samples.push(latency);
+                            updateDisplay();
+                            state.pendingT1 = undefined;
+                            setTimeout(function() {
+                                dot.style.opacity = '0';
+                                setTimeout(function() {
+                                    dot.style.opacity = '1';
+                                    dot.style.display = 'none';
+                                }, 120);
+                            }, 80);
+                        }
+                    });
+                }
+
+                if (state.cleanup) state.cleanup();
+
+                area.addEventListener('touchstart', handleTouchStart, { passive: false });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') exitTest('latency');
+                    else if (e.key === 'r' || e.key === 'R') {
+                        state.samples = [];
+                        state.lastLatency = null;
+                        updateDisplay();
+                    }
+                });
+
+                state.cleanup = function() {
+                    area.removeEventListener('touchstart', handleTouchStart);
+                };
+
+                updateDisplay();
+            }
+
+            // ==================== 色域测试 ====================
+            function initColorGamut() {
+                const content = document.getElementById('colorgamut-content');
+                const state = initTestState('colorgamut');
+                const colors = [
+                    '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFFFFF', '#000000',
+                    '#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24', '#FF9FF3', '#54A0FF', '#5F27CD', '#01A3A4',
+                    '#F368E0', '#FF9F43', '#10AC84', '#EE5A24', '#0ABDE3', '#8395A7', '#F8A5C2', '#574B90',
+                    '#FF7F50', '#6A89CC', '#82CCDD', '#B8E994', '#F19066', '#E15F41', '#C44569', '#3DC1D3',
+                    '#F3A683', '#F7D794', '#778BEB', '#E77F67', '#CF6A87', '#786FA6', '#FDA7DF', '#63CDDA'
+                ];
+                content.innerHTML = '';
+                colors.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'cg-swatch';
+                    div.style.backgroundColor = c;
+                    const span = document.createElement('span');
+                    span.textContent = c;
+                    div.appendChild(span);
+                    content.appendChild(div);
+                });
+                if (state.cleanup) state.cleanup();
+                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') exitTest('colorgamut'); });
+                state.cleanup = function() {};
+            }
+
+            // ==================== 亮度均匀性 ====================
+            function initUniformity() {
+                const content = document.getElementById('uniformity-content');
+                const info = document.getElementById('uniformity-info');
+                const state = initTestState('uniformity');
+                state.level = state.level || 0;
+                const levels = [
+                    { name: '白色 100%', hex: '#FFFFFF' },
+                    { name: '白色 75%', hex: '#BFBFBF' },
+                    { name: '白色 50%', hex: '#808080' },
+                    { name: '白色 25%', hex: '#404040' },
+                    { name: '白色 10%', hex: '#1A1A1A' },
+                    { name: '纯黑 0%', hex: '#000000' },
+                ];
+
+                function applyLevel(index) {
+                    index = (index + levels.length) % levels.length;
+                    state.level = index;
+                    const lv = levels[index];
+                    content.style.backgroundColor = lv.hex;
+                    const isLight = isLightColor(lv.hex);
+                    info.style.color = isLight ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)';
+                    info.style.background = isLight ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+                    info.textContent = lv.name + ' ' + lv.hex + ' · 点击切换 (' + (index + 1) + '/' + levels.length + ')';
+                }
+
+                if (state.cleanup) state.cleanup();
+
+                const handleClick = function() { applyLevel(state.level + 1); };
+                const handleTouch = function(e) { if (e.cancelable) e.preventDefault(); applyLevel(state.level + 1); };
+                const handleKey = function(e) {
+                    if (e.key === 'Escape') exitTest('uniformity');
+                    else if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); applyLevel(state.level + 1); }
+                    else if (e.key === 'ArrowLeft') { e.preventDefault(); applyLevel(state.level - 1); }
+                };
+
+                content.addEventListener('click', handleClick);
+                content.addEventListener('touchend', handleTouch);
+                document.addEventListener('keydown', handleKey);
+
+                state.cleanup = function() {
+                    content.removeEventListener('click', handleClick);
+                    content.removeEventListener('touchend', handleTouch);
+                    document.removeEventListener('keydown', handleKey);
+                };
+
+                applyLevel(state.level);
+            }
+
+            // ==================== 初始化 ====================
+            showHome();
+            addGlobalExitGesture();
+
+            window.addEventListener('popstate', function() {
+                const anyActive = document.querySelector('.test-page.active');
+                if (anyActive) {
+                    const id = anyActive.id.replace('-page', '');
+                    exitTest(id);
+                }
+            });
+
+            console.log('Screen Diagnostics Tool v1.6 initialized. © Brian');
+        })();
+    </script>
+</body>
+</html>
