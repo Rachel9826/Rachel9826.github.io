@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机抽取器</title>
+    <style>
+        :root {
+            --bg-primary: #0e0e12;
+            --bg-secondary: #15151c;
+            --bg-tertiary: #1b1b24;
+            --bg-hover: #20202c;
+            --bg-input: #181820;
+            --border-color: #2a2a36;
+            --border-light: #353545;
+            --text-primary: #e4e1dc;
+            --text-secondary: #8a8a96;
+            --text-tertiary: #5a5a66;
+            --accent: #b8926a;
+            --accent-hover: #c9a47e;
+            --accent-dim: rgba(184, 146, 106, 0.15);
+            --accent-glow: rgba(184, 146, 106, 0.25);
+            --danger: #8a5a5a;
+            --danger-hover: #a06a6a;
+            --success: #6a8a7a;
+            --success-hover: #7a9a8a;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-med: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(184, 146, 106, 0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(106, 138, 122, 0.02) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 32px;
+        }
+
+        .app-header .logo-area {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .app-header .logo {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--text-primary);
+        }
+
+        .app-header .logo span {
+            color: var(--accent);
+        }
+
+        .app-header .version-tag {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+        }
+
+        .header-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-stats .stat-num {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: border-color var(--transition-med);
+        }
+        .card:hover {
+            border-color: var(--border-light);
+        }
+        .card + .card {
+            margin-top: 20px;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon {
+            font-size: 1rem;
+            color: var(--accent);
+        }
+        .card-title .badge {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="number"] {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: var(--font-stack);
+            letter-spacing: 0.02em;
+            outline: none;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        .input-group input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+            font-family: var(--font-stack);
+            white-space: nowrap;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0e0e12;
+            font-weight: 600;
+            border-color: var(--accent);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: rgba(138, 90, 90, 0.3);
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(138, 90, 90, 0.1);
+            border-color: var(--danger);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: var(--radius-sm);
+        }
+        .btn-xs {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            border-radius: 4px;
+        }
+
+        .btn-lg {
+            padding: 14px 32px;
+            font-size: 1rem;
+            border-radius: var(--radius-md);
+            letter-spacing: 0.05em;
+        }
+
+        .item-list-container {
+            max-height: 320px;
+            overflow-y: auto;
+            margin-top: 12px;
+            border-radius: var(--radius-sm);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-light) transparent;
+        }
+        .item-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .item-list-container::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
+        }
+        .item-list-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .item-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .item-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            animation: itemAppear 0.3s ease-out;
+            cursor: default;
+        }
+        .item-entry:hover {
+            border-color: var(--border-light);
+            background: var(--bg-tertiary);
+        }
+        .item-entry.highlighted {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            box-shadow: 0 0 16px var(--accent-glow);
+            transform: scale(1.01);
+        }
+        .item-entry.result-highlight {
+            border-color: var(--success);
+            background: rgba(106, 138, 122, 0.12);
+            box-shadow: 0 0 20px rgba(106, 138, 122, 0.2);
+            transform: scale(1.02);
+        }
+
+        @keyframes itemAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .item-index {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            min-width: 24px;
+            text-align: right;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            user-select: none;
+        }
+        .item-text {
+            flex: 1;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            word-break: break-word;
+            letter-spacing: 0.02em;
+        }
+        .item-delete {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all var(--transition-fast);
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .item-delete:hover {
+            color: var(--danger);
+            background: rgba(138, 90, 90, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+        }
+        .empty-state .empty-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .batch-textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: var(--font-stack);
+            letter-spacing: 0.02em;
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .batch-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        .batch-textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .extraction-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .extract-settings {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+        .extract-settings .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .extract-settings label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+            user-select: none;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg-input);
+        }
+        .quantity-control button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-stack);
+            line-height: 1;
+            user-select: none;
+        }
+        .quantity-control button:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        .quantity-control input {
+            width: 56px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 4px;
+            outline: none;
+            font-family: var(--font-stack);
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .quantity-control input::-webkit-outer-spin-button,
+        .quantity-control input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            cursor: pointer;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .toggle-switch .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            transition: all var(--transition-med);
+        }
+        .toggle-switch .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            left: 2px;
+            bottom: 2px;
+            background: var(--text-tertiary);
+            border-radius: 50%;
+            transition: all var(--transition-med);
+        }
+        .toggle-switch input:checked+.toggle-slider {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+        }
+        .toggle-switch input:checked+.toggle-slider::before {
+            transform: translateX(18px);
+            background: var(--accent);
+        }
+
+        .extract-btn-container {
+            display: flex;
+            justify-content: center;
+            padding: 8px 0;
+        }
+        .extract-btn {
+            position: relative;
+            overflow: hidden;
+            min-width: 220px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent) 0%, #a07d52 50%, var(--accent) 100%);
+            background-size: 200% 200%;
+            animation: shimmer 3s ease-in-out infinite;
+            border: none;
+            color: #0e0e12;
+            box-shadow: 0 4px 24px var(--accent-glow);
+        }
+        .extract-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 36px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        @keyframes shimmer {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .results-container {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .result-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            animation: resultAppear 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: all var(--transition-med);
+        }
+        .result-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes resultAppear {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .result-card .result-number {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 40px;
+            text-align: center;
+            letter-spacing: 0.02em;
+            user-select: none;
+        }
+        .result-card .result-content {
+            flex: 1;
+        }
+        .result-card .result-label {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 2px;
+        }
+        .result-card .result-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.02em;
+            word-break: break-word;
+        }
+
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .history-chip {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            animation: itemAppear 0.3s ease-out;
+        }
+        .history-chip:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+        .history-empty {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.03em;
+            padding: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 0 14px;
+            }
+            .app-header {
+                padding: 18px 0 14px;
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            .main-layout {
+                gap: 16px;
+            }
+            .card {
+                padding: 16px;
+                border-radius: var(--radius-md);
+            }
+            .extract-btn {
+                min-width: 100%;
+                font-size: 0.95rem;
+                padding: 14px 24px;
+            }
+            .extract-settings {
+                gap: 10px;
+            }
+            .quantity-control input {
+                width: 44px;
+                font-size: 0.85rem;
+            }
+            .result-card {
+                padding: 12px 16px;
+            }
+            .result-card .result-text {
+                font-size: 1rem;
+            }
+            .result-card .result-number {
+                font-size: 1.3rem;
+                min-width: 32px;
+            }
+            .item-list-container {
+                max-height: 240px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-stats {
+                gap: 12px;
+                font-size: 0.7rem;
+            }
+            .extract-settings {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .extract-settings .setting-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .justify-between {
+            justify-content: space-between;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            letter-spacing: 0.03em;
+            box-shadow: var(--shadow-lg);
+            animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in forwards;
+            animation-duration: 0.3s, 0.3s;
+            animation-delay: 0s, 2.5s;
+            pointer-events: auto;
+            max-width: 360px;
+            word-break: break-word;
+        }
+        .toast.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .toast.error {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .toast.info {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo">随机<span>抽取器</span></div>
+                <span class="version-tag">v2.1</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    条目数 <span class="stat-num" id="headerTotalItems">0</span>
+                </div>
+                <div class="stat-item">
+                    已抽取 <span class="stat-num" id="headerTotalDrawn">0</span>
+                </div>
+                <div class="stat-item">
+                    剩余 <span class="stat-num" id="headerRemaining">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Column: Content Management -->
+            <div style="display:flex;flex-direction:column;">
+                <!-- Add Item Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">◈</span> 添加内容
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="singleItemInput" placeholder="输入单个条目，按Enter添加" autocomplete="off">
+                        <button class="btn btn-primary" id="btnAddItem" title="添加">添加</button>
+                    </div>
+
+                    <div style="margin-top:14px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-size:0.75rem;color:var(--text-tertiary);letter-spacing:0.04em;text-transform:uppercase;">批量导入</span>
+                            <span style="font-size:0.7rem;color:var(--text-tertiary);">每行一个条目</span>
+                        </div>
+                        <textarea class="batch-textarea" id="batchInput" placeholder="粘贴多行内容，每行作为一个独立条目&#10;例如：&#10;张三&#10;李四&#10;王五"></textarea>
+                        <button class="btn btn-secondary btn-sm" id="btnBatchImport">导入全部</button>
+                    </div>
+                </div>
+
+                <!-- Item List Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">▤</span> 条目列表
+                        <span class="badge" id="itemCountBadge">0</span>
+                    </div>
+                    <div class="item-list-container" id="itemListContainer">
+                        <ul class="item-list" id="itemList"></ul>
+                        <div class="empty-state" id="emptyState">
+                            <span class="empty-icon">◇</span>
+                            暂无条目，请添加内容
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-12" style="gap:8px;">
+                        <button class="btn btn-danger btn-sm" id="btnClearAll">清空全部</button>
+                        <button class="btn btn-secondary btn-sm" id="btnExportList">导出列表</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Extraction Area -->
+            <div class="extraction-area">
+                <!-- Extract Settings Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">⚄</span> 抽取设置
+                    </div>
+                    <div class="extract-settings">
+                        <div class="setting-group">
+                            <label>抽取数量</label>
+                            <div class="quantity-control">
+                                <button id="btnQtyMinus">−</button>
+                                <input type="number" id="extractQty" value="1" min="1" max="999">
+                                <button id="btnQtyPlus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label for="allowRepeat">允许重复</label>
+                            <label class="toggle-switch" title="允许重复抽取">
+                                <input type="checkbox" id="allowRepeat" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label for="excludeDrawn">排除已抽取</label>
+                            <label class="toggle-switch" title="排除已抽取的条目">
+                                <input type="checkbox" id="excludeDrawn" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extract Button -->
+                <div class="extract-btn-container">
+                    <button class="btn btn-lg extract-btn" id="btnExtract">开始抽取</button>
+                </div>
+
+                <!-- Results Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">★</span> 抽取结果
+                        <span class="badge" id="resultCountBadge">0</span>
+                    </div>
+                    <div class="results-container" id="resultsContainer">
+                        <div class="empty-state" id="resultsEmptyState">
+                            <span class="empty-icon">◇</span>
+                            暂无抽取结果
+                        </div>
+                    </div>
+                    <div class="flex gap-8 mt-12" id="resultActions" style="display:none;">
+                        <button class="btn btn-secondary btn-sm" id="btnCopyResults">复制结果</button>
+                        <button class="btn btn-secondary btn-sm" id="btnClearResults">清空结果</button>
+                    </div>
+                </div>
+
+                <!-- History Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">◷</span> 历史记录
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="history-empty" id="historyEmpty">暂无历史记录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            // ==================== STATE ====================
+            const state = {
+                items: [],
+                results: [],
+                history: [],
+                isExtracting: false,
+                animationTimer: null,
+            };
+
+            // ==================== DOM REFS ====================
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const dom = {
+                singleItemInput: $('#singleItemInput'),
+                btnAddItem: $('#btnAddItem'),
+                batchInput: $('#batchInput'),
+                btnBatchImport: $('#btnBatchImport'),
+                itemList: $('#itemList'),
+                itemListContainer: $('#itemListContainer'),
+                emptyState: $('#emptyState'),
+                itemCountBadge: $('#itemCountBadge'),
+                btnClearAll: $('#btnClearAll'),
+                btnExportList: $('#btnExportList'),
+                extractQty: $('#extractQty'),
+                btnQtyMinus: $('#btnQtyMinus'),
+                btnQtyPlus: $('#btnQtyPlus'),
+                allowRepeat: $('#allowRepeat'),
+                excludeDrawn: $('#excludeDrawn'),
+                btnExtract: $('#btnExtract'),
+                resultsContainer: $('#resultsContainer'),
+                resultsEmptyState: $('#resultsEmptyState'),
+                resultCountBadge: $('#resultCountBadge'),
+                resultActions: $('#resultActions'),
+                btnCopyResults: $('#btnCopyResults'),
+                btnClearResults: $('#btnClearResults'),
+                historyList: $('#historyList'),
+                historyEmpty: $('#historyEmpty'),
+                headerTotalItems: $('#headerTotalItems'),
+                headerTotalDrawn: $('#headerTotalDrawn'),
+                headerRemaining: $('#headerRemaining'),
+                toastContainer: $('#toastContainer'),
+            };
+
+            // ==================== TOAST ====================
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                dom.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 3000);
+            }
+
+            // ==================== UTILITY ====================
+            function getAvailableItems() {
+                if (!dom.excludeDrawn.checked) {
+                    return state.items;
+                }
+                return state.items.filter(item => !item.drawn);
+            }
+
+            function getMaxExtractable() {
+                if (dom.allowRepeat.checked) {
+                    return state.items.length > 0 ? 999 : 0;
+                }
+                return getAvailableItems().length;
+            }
+
+            function validateQty() {
+                let qty = parseInt(dom.extractQty.value) || 1;
+                const maxQty = getMaxExtractable();
+                if (maxQty === 0) qty = 0;
+                else if (qty < 1) qty = 1;
+                else if (qty > maxQty && !dom.allowRepeat.checked) qty = maxQty;
+                else if (qty > 999) qty = 999;
+                dom.extractQty.value = qty;
+                return qty;
+            }
+
+            // ==================== RENDER ITEMS ====================
+            function renderItems() {
+                dom.itemList.innerHTML = '';
+                if (state.items.length === 0) {
+                    dom.emptyState.classList.remove('hidden');
+                    dom.itemList.classList.add('hidden');
+                } else {
+                    dom.emptyState.classList.add('hidden');
+                    dom.itemList.classList.remove('hidden');
+                    state.items.forEach((item, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'item-entry';
+                        li.dataset.index = index;
+                        if (item.drawn && dom.excludeDrawn.checked) {
+                            li.style.opacity = '0.45';
+                        }
+                        li.innerHTML = `
+                            <span class="item-index">${index + 1}</span>
+                            <span class="item-text">${escapeHtml(item.text)}</span>
+                            <button class="item-delete" data-index="${index}" title="删除" aria-label="删除">✕</button>
+                        `;
+                        dom.itemList.appendChild(li);
+                    });
+                    dom.itemList.querySelectorAll('.item-delete').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const idx = parseInt(btn.dataset.index);
+                            deleteItem(idx);
+                        });
+                    });
+                }
+                updateStats();
+                updateExtractBtnState();
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function updateStats() {
+                const total = state.items.length;
+                const drawnCount = state.items.filter(i => i.drawn).length;
+                const remaining = total - drawnCount;
+                dom.headerTotalItems.textContent = total;
+                dom.headerTotalDrawn.textContent = drawnCount;
+                dom.headerRemaining.textContent = remaining;
+                dom.itemCountBadge.textContent = total;
+                dom.resultCountBadge.textContent = state.results.length;
+                if (state.results.length > 0) {
+                    dom.resultActions.style.display = 'flex';
+                } else {
+                    dom.resultActions.style.display = 'none';
+                }
+            }
+
+            function updateExtractBtnState() {
+                const available = getAvailableItems();
+                const qty = parseInt(dom.extractQty.value) || 1;
+                if (state.items.length === 0) {
+                    dom.btnExtract.disabled = true;
+                } else if (!dom.allowRepeat.checked && available.length === 0) {
+                    dom.btnExtract.disabled = true;
+                } else if (!dom.allowRepeat.checked && qty > available.length) {
+                    dom.btnExtract.disabled = true;
+                } else {
+                    dom.btnExtract.disabled = false;
+                }
+                if (state.isExtracting) {
+                    dom.btnExtract.disabled = true;
+                }
+            }
+
+            // ==================== ITEM OPERATIONS ====================
+            function addItem(text) {
+                const trimmed = text.trim();
+                if (!trimmed) return;
+                if (state.items.some(i => i.text === trimmed)) {
+                    showToast(`"${trimmed}" 已存在，跳过添加`, 'info');
+                    return;
+                }
+                state.items.push({ text: trimmed, drawn: false });
+                renderItems();
+                dom.singleItemInput.value = '';
+                dom.singleItemInput.focus();
+            }
+
+            function addItemsBatch(texts) {
+                let added = 0;
+                let skipped = 0;
+                texts.forEach(t => {
+                    const trimmed = t.trim();
+                    if (!trimmed) return;
+                    if (state.items.some(i => i.text === trimmed)) {
+                        skipped++;
+                    } else {
+                        state.items.push({ text: trimmed, drawn: false });
+                        added++;
+                    }
+                });
+                renderItems();
+                if (added > 0) {
+                    showToast(`成功添加 ${added} 个条目${skipped > 0 ? `，跳过 ${skipped} 个重复项` : ''}`, 'success');
+                } else if (skipped > 0) {
+                    showToast('所有条目均已存在', 'info');
+                }
+            }
+
+            function deleteItem(index) {
+                if (index < 0 || index >= state.items.length) return;
+                const deleted = state.items[index];
+                state.items.splice(index, 1);
+                renderItems();
+                showToast(`已删除 "${deleted.text}"`, 'info');
+            }
+
+            function clearAllItems() {
+                if (state.items.length === 0) return;
+                if (confirm(`确定要清空全部 ${state.items.length} 个条目吗？`)) {
+                    state.items = [];
+                    state.results = [];
+                    state.history = [];
+                    renderItems();
+                    renderResults();
+                    renderHistory();
+                    showToast('已清空所有数据', 'info');
+                }
+            }
+
+            function exportList() {
+                if (state.items.length === 0) {
+                    showToast('没有可导出的条目', 'error');
+                    return;
+                }
+                const text = state.items.map((i, idx) => `${idx + 1}. ${i.text}`).join('\n');
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('列表已复制到剪贴板', 'success');
+                }).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showToast('列表已复制到剪贴板', 'success');
+                });
+            }
+
+            // ==================== RENDER RESULTS ====================
+            function renderResults() {
+                dom.resultsContainer.innerHTML = '';
+                if (state.results.length === 0) {
+                    dom.resultsContainer.appendChild(dom.resultsEmptyState);
+                    dom.resultsEmptyState.classList.remove('hidden');
+                } else {
+                    dom.resultsEmptyState.classList.add('hidden');
+                    state.results.forEach((result, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        card.innerHTML = `
+                            <div class="result-number">#${index + 1}</div>
+                            <div class="result-content">
+                                <div class="result-label">抽取结果</div>
+                                <div class="result-text">${escapeHtml(result.text)}</div>
+                            </div>
+                        `;
+                        dom.resultsContainer.appendChild(card);
+                    });
+                }
+                updateStats();
+            }
+
+            function renderHistory() {
+                dom.historyList.innerHTML = '';
+                if (state.history.length === 0) {
+                    dom.historyList.innerHTML = '<div class="history-empty" id="historyEmpty">暂无历史记录</div>';
+                    return;
+                }
+                state.history.forEach((item) => {
+                    const chip = document.createElement('span');
+                    chip.className = 'history-chip';
+                    chip.textContent = item;
+                    chip.title = '点击查看';
+                    chip.addEventListener('click', () => {
+                        showToast(`历史记录: ${item}`, 'info');
+                    });
+                    dom.historyList.appendChild(chip);
+                });
+            }
+
+            function clearResults() {
+                state.results = [];
+                renderResults();
+                showToast('已清空结果', 'info');
+            }
+
+            function copyResults() {
+                if (state.results.length === 0) {
+                    showToast('没有结果可复制', 'error');
+                    return;
+                }
+                const text = state.results.map((r, i) => `${i + 1}. ${r.text}`).join('\n');
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('结果已复制到剪贴板', 'success');
+                }).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showToast('结果已复制到剪贴板', 'success');
+                });
+            }
+
+            // ==================== EXTRACTION LOGIC ====================
+            function performExtraction() {
+                if (state.isExtracting) return;
+                const qty = validateQty();
+                if (qty < 1) {
+                    showToast('请先添加条目', 'error');
+                    return;
+                }
+                const available = getAvailableItems();
+                if (!dom.allowRepeat.checked && available.length < qty) {
+                    showToast(`可抽取条目不足，仅剩 ${available.length} 个`, 'error');
+                    return;
+                }
+                if (available.length === 0) {
+                    showToast('没有可抽取的条目', 'error');
+                    return;
+                }
+
+                state.isExtracting = true;
+                updateExtractBtnState();
+                dom.btnExtract.textContent = '⏳ 抽取中...';
+
+                document.querySelectorAll('.item-entry').forEach(el => {
+                    el.classList.remove('highlighted', 'result-highlight');
+                });
+
+                let pool = [...available];
+                const finalResults = [];
+                if (dom.allowRepeat.checked) {
+                    for (let i = 0; i < qty; i++) {
+                        const randomIdx = Math.floor(Math.random() * pool.length);
+                        finalResults.push(pool[randomIdx]);
+                    }
+                } else {
+                    const shuffled = [...pool];
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                    finalResults.push(...shuffled.slice(0, qty));
+                }
+
+                const allItemEls = document.querySelectorAll('.item-entry');
+                const availableIndices = state.items
+                    .map((item, idx) => ({ item, idx }))
+                    .filter(({ item }) => !item.drawn || !dom.excludeDrawn.checked)
+                    .map(({ idx }) => idx);
+
+                if (availableIndices.length === 0) {
+                    state.isExtracting = false;
+                    dom.btnExtract.textContent = '开始抽取';
+                    updateExtractBtnState();
+                    return;
+                }
+
+                let step = 0;
+                const totalSteps = 25 + Math.floor(Math.random() * 10);
+                const intervals = [];
+                for (let i = 0; i < totalSteps; i++) {
+                    const progress = i / totalSteps;
+                    intervals.push(50 + progress * progress * 500);
+                }
+
+                function animateStep() {
+                    if (step >= totalSteps) {
+                        showFinalResults(finalResults);
+                        return;
+                    }
+                    const randomAvailableIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                    const targetEl = allItemEls[randomAvailableIdx];
+                    if (targetEl) {
+                        allItemEls.forEach(el => el.classList.remove('highlighted'));
+                        targetEl.classList.add('highlighted');
+                        targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                    step++;
+                    state.animationTimer = setTimeout(animateStep, intervals[step - 1] || 100);
+                }
+                animateStep();
+
+                function showFinalResults(results) {
+                    allItemEls.forEach(el => el.classList.remove('highlighted'));
+
+                    results.forEach(r => {
+                        state.results.unshift({ text: r.text, timestamp: Date.now() });
+                        state.history.unshift(r.text);
+                        const item = state.items.find(i => i.text === r.text);
+                        if (item) item.drawn = true;
+                    });
+                    if (state.history.length > 50) state.history.length = 50;
+                    if (state.results.length > 100) state.results.length = 100;
+
+                    allItemEls.forEach(el => {
+                        const idx = parseInt(el.dataset.index);
+                        if (idx >= 0 && idx < state.items.length) {
+                            const isResult = results.some(r => r.text === state.items[idx].text);
+                            if (isResult) {
+                                el.classList.add('result-highlight');
+                            }
+                        }
+                    });
+
+                    renderItems();
+                    renderResults();
+                    renderHistory();
+                    setTimeout(() => renderItems(), 100);
+
+                    state.isExtracting = false;
+                    dom.btnExtract.textContent = '开始抽取';
+                    updateExtractBtnState();
+
+                    if (results.length > 0) {
+                        showToast(`成功抽取 ${results.length} 个条目`, 'success');
+                    }
+                }
+            }
+
+            // ==================== EVENT LISTENERS ====================
+            dom.btnAddItem.addEventListener('click', () => {
+                addItem(dom.singleItemInput.value);
+            });
+            dom.singleItemInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addItem(dom.singleItemInput.value);
+                }
+            });
+
+            dom.btnBatchImport.addEventListener('click', () => {
+                const text = dom.batchInput.value;
+                if (!text.trim()) {
+                    showToast('请输入批量内容', 'error');
+                    return;
+                }
+                const lines = text.split('\n').filter(l => l.trim());
+                if (lines.length === 0) {
+                    showToast('没有有效内容', 'error');
+                    return;
+                }
+                addItemsBatch(lines);
+                dom.batchInput.value = '';
+            });
+
+            dom.btnClearAll.addEventListener('click', clearAllItems);
+            dom.btnExportList.addEventListener('click', exportList);
+
+            dom.btnQtyMinus.addEventListener('click', () => {
+                let qty = parseInt(dom.extractQty.value) || 1;
+                if (qty > 1) qty--;
+                dom.extractQty.value = qty;
+                validateQty();
+                updateExtractBtnState();
+            });
+            dom.btnQtyPlus.addEventListener('click', () => {
+                let qty = parseInt(dom.extractQty.value) || 1;
+                const maxQty = getMaxExtractable();
+                if (qty < (dom.allowRepeat.checked ? 999 : maxQty)) qty++;
+                dom.extractQty.value = qty;
+                updateExtractBtnState();
+            });
+            dom.extractQty.addEventListener('change', () => {
+                validateQty();
+                updateExtractBtnState();
+            });
+            dom.extractQty.addEventListener('input', () => {
+                updateExtractBtnState();
+            });
+
+            dom.allowRepeat.addEventListener('change', () => {
+                validateQty();
+                updateExtractBtnState();
+                renderItems();
+            });
+            dom.excludeDrawn.addEventListener('change', () => {
+                validateQty();
+                updateExtractBtnState();
+                renderItems();
+            });
+
+            dom.btnExtract.addEventListener('click', performExtraction);
+
+            dom.btnCopyResults.addEventListener('click', copyResults);
+            dom.btnClearResults.addEventListener('click', clearResults);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    performExtraction();
+                }
+            });
+
+            // ==================== INIT ====================
+            function init() {
+                renderItems();
+                renderResults();
+                renderHistory();
+                updateExtractBtnState();
+                validateQty();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
